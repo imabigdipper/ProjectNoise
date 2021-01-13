@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ProjectNoise</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="button_start_text">Start Service</string>
+    <string name="channel_id">PN</string>
+    <string name="button_stop_text">Stop Service</string>
+    <string name="home_frag_text">Service Panel</string>
+</resources>
