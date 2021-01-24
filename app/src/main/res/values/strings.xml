@@ -7,4 +7,5 @@
     <string name="channel_id">PN</string>
     <string name="button_stop_text">Stop Service</string>
     <string name="home_frag_text">Service Panel</string>
+    <string name="db_reading">0</string>
 </resources>
