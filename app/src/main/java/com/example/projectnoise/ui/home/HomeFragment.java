@@ -16,12 +16,17 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.projectnoise.R;
 import com.example.projectnoise.services.TestService;
+import com.example.projectnoise.util.DisplayReading;
 
-public class HomeFragment extends Fragment {
+import java.util.Locale;
+
+public class HomeFragment extends Fragment implements DisplayReading.OnUpdateCallback {
 
     private static String TAG = "Home Fragment";
 
     private HomeViewModel homeViewModel;
+    private double dBvalue;
+    private TextView dBreading;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -38,9 +43,15 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
+
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        dBreading = view.findViewById(R.id.db_reading_text);
+
+        // On click, generate and intent to start/stop the TestService
 
         view.findViewById(R.id.button_start).setOnClickListener(view12 -> {
             Intent intent = new Intent(getActivity(), TestService.class);
@@ -53,5 +64,12 @@ public class HomeFragment extends Fragment {
             Log.i(TAG, "Intent made");
             getActivity().stopService(intent);
         });
+    }
+
+    @Override
+    public void onUpdate(double instantDB) {
+        this.dBvalue = instantDB;
+        String text = String.format(Locale.US, "%.02f", instantDB) + " dB";
+        this.dBreading.setText(text);
     }
 }
