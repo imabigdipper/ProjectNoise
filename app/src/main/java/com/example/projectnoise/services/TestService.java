@@ -82,6 +82,8 @@ public class TestService extends Service {
 
     @Override
     public void onDestroy() {
+        stopMediaRecorder(mRecorder);
+        mRecorder = null;
         handlerThread.quit();
         Toast.makeText(this, "Service Destroyed", Toast.LENGTH_SHORT).show();
         super.onDestroy();
@@ -120,5 +122,11 @@ public class TestService extends Service {
             e.printStackTrace();
         }
         return mRecorder;
+    }
+
+    private void stopMediaRecorder(MediaRecorder mRecorder) {
+        mRecorder.stop();
+        mRecorder.reset();
+        mRecorder.release();
     }
 }
