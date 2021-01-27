@@ -108,7 +108,7 @@ public class MeasureService extends Service {
      *  https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
      **/
 
-    private static String TAG = "Measure Service";
+    private static final String TAG = "Measure Service";
 
     // AudioRecord instance configuration
     private static final int SAMPLE_RATE = 44100;
