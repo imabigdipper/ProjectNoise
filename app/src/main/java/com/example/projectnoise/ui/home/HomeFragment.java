@@ -15,7 +15,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.projectnoise.R;
-import com.example.projectnoise.services.TestService;
+import com.example.projectnoise.services.MeasureService;
 import com.example.projectnoise.util.DisplayReading;
 
 import java.util.Locale;
@@ -51,16 +51,16 @@ public class HomeFragment extends Fragment implements DisplayReading.OnUpdateCal
 
         dBreading = view.findViewById(R.id.db_reading_text);
 
-        // On click, generate and intent to start/stop the TestService
+        // On click, generate and intent to start/stop the MeasureService
 
         view.findViewById(R.id.button_start).setOnClickListener(view12 -> {
-            Intent intent = new Intent(getActivity(), TestService.class);
+            Intent intent = new Intent(getActivity(), MeasureService.class);
             Log.i(TAG, "Intent made");
             getActivity().startService(intent);
         });
 
         view.findViewById(R.id.button_stop).setOnClickListener(view1 -> {
-            Intent intent = new Intent(getActivity(), TestService.class);
+            Intent intent = new Intent(getActivity(), MeasureService.class);
             Log.i(TAG, "Intent made");
             getActivity().stopService(intent);
         });
