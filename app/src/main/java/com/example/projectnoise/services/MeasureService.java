@@ -125,7 +125,8 @@ public class MeasureService extends Service {
     private boolean isRecording = false;
 
     private void startRecorder() {
-         long endTime = System.currentTimeMillis()+ 100000; // 1m
+        // Record for 1m
+         long endTime = System.currentTimeMillis()+ 100000;
 
         recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
         recorder.startRecording();
@@ -141,7 +142,7 @@ public class MeasureService extends Service {
             double instant;
             int count = 0;
 
-            // Continuously read audio into buffer
+            // Continuously read audio into buffer for 1m
             while (System.currentTimeMillis() < endTime) {
                 recorder.read(buffer, 0, bufferSize);
                 //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byt
