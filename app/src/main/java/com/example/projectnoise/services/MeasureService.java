@@ -45,16 +45,17 @@ public class MeasureService extends Service {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String input = intent.getStringExtra("inputExtra");
+
         createNotificationChannel();
+
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        Notification foregroundNotification = createForegroundNotification(pendingIntent);
 
-        startForeground(1,foregroundNotification);
-
+        // Start foreground service with given foreground notification
+        startForeground(1, createForegroundNotification(pendingIntent));
         Log.i(TAG, "Started in Foreground");
 
         // Offload work to background thread
@@ -63,6 +64,8 @@ public class MeasureService extends Service {
         return  START_STICKY;
     }
 
+
+    /** Helper function to create foreground notification **/
 
     private Notification createForegroundNotification(PendingIntent pendingIntent) {
 
@@ -74,6 +77,9 @@ public class MeasureService extends Service {
                 .setContentIntent(pendingIntent)
                 .build();
     }
+
+
+    /** Helper function to create notification channel **/
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -97,36 +103,37 @@ public class MeasureService extends Service {
 
 
 
-    // Measuring code
+    /**
+     * dB measuring code using AudioRecord. Borrowed from:
+     *  https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
+     **/
 
     private static String TAG = "Measure Service";
 
+    // AudioRecord instance configuration
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
     private static final int SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION;
+    int bufferSize = 8192; // 2 ^ 13, necessary for the fft
 
-    private DoubleFFT_1D transform;
-
+    private DoubleFFT_1D transform = new DoubleFFT_1D(8192);
     private AudioRecord recorder;
     private Thread recorderThread;
 
-    private long endTime;
     private double calibration = 0;
     private boolean isRecording = false;
 
-
     private void startRecorder() {
-        transform = new DoubleFFT_1D(8192);
-        int bufferSize = 8192; // 2 ^ 13, necessary for the fft
+         long endTime = System.currentTimeMillis()+ 100000; // 1m
+
         recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
-
-        short[] buffer = new short[bufferSize];
-
-        endTime = System.currentTimeMillis() + 30000; // 30 seconds
         recorder.startRecording();
         isRecording = true;
 
+        short[] buffer = new short[bufferSize];
+
+        // Define and run thread to do AudioRecord background work
         Thread recorderThread = new Thread((() -> {
             double dB;
             double average;
@@ -134,10 +141,11 @@ public class MeasureService extends Service {
             double instant;
             int count = 0;
 
-            while (isRecording) {
-
+            // Continuously read audio into buffer
+            while (System.currentTimeMillis() < endTime) {
                 recorder.read(buffer, 0, bufferSize);
-                dB = doFFT(buffer);
+                //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byt
+                dB = doFFT(buffer); // Perform Fast Fourier Transform
                 if (dB != Double.NEGATIVE_INFINITY) {
                     dbSumTotal += dB;
                     count++;
@@ -147,8 +155,6 @@ public class MeasureService extends Service {
                 Log.i(TAG, "instant: " + instant);
                 Log.i(TAG, "average: " + average);
             }
-
-
         }), "AudioRecorder Thread");
 
         Log.i(TAG, "Starting recorder thread");
@@ -166,6 +172,8 @@ public class MeasureService extends Service {
                 Log.d(TAG,
                         "Primary thread cannot wait for secondary audio thread to close");
             }
+
+            // Properly stop and release AudioRecord instance
             recorder.stop();
             recorder.release();
             recorder = null;
@@ -173,25 +181,27 @@ public class MeasureService extends Service {
         }
     }
 
+
+    /** Helper function to do Fast Fourier Transform. Uses JTransforms dependency **/
+
     private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
         double avg = 0.0, amplitude = 0.0;
 
-        // get a half-filled array of double values for the fft calculation
+        // Get a half-filled array of double values for FFT calculation
         for (int i = 0; i < rawData.length; i++) {
             fft[i] = rawData[i] / ((double) Short.MAX_VALUE);
         }
 
-        // fft
+        // FFT
         transform.realForwardFull(fft);
 
-        // calculate the sum of amplitudes
+        // Calculate the sum of amplitudes
         for (int i = 0; i < fft.length; i += 2) {
             //                              reals                 imaginary
             amplitude += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2));
             avg += amplitude * Values.A_WEIGHT_COEFFICIENTS[i / 2];
         }
-
         return avg / rawData.length;
     }
 }
