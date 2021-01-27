@@ -15,12 +15,9 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.projectnoise.R;
-import com.example.projectnoise.services.TestService;
-import com.example.projectnoise.util.DisplayReading;
+import com.example.projectnoise.services.MeasureService;
 
-import java.util.Locale;
-
-public class HomeFragment extends Fragment implements DisplayReading.OnUpdateCallback {
+public class HomeFragment extends Fragment {
 
     private static String TAG = "Home Fragment";
 
@@ -34,12 +31,7 @@ public class HomeFragment extends Fragment implements DisplayReading.OnUpdateCal
                 new ViewModelProvider(this).get(HomeViewModel.class);
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         final TextView textView = root.findViewById(R.id.text_home);
-        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
+        homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 
@@ -51,25 +43,25 @@ public class HomeFragment extends Fragment implements DisplayReading.OnUpdateCal
 
         dBreading = view.findViewById(R.id.db_reading_text);
 
-        // On click, generate and intent to start/stop the TestService
+        // On click, generate intent and start/stop the MeasureService
 
         view.findViewById(R.id.button_start).setOnClickListener(view12 -> {
-            Intent intent = new Intent(getActivity(), TestService.class);
+            Intent intent = new Intent(getActivity(), MeasureService.class);
             Log.i(TAG, "Intent made");
             getActivity().startService(intent);
         });
 
         view.findViewById(R.id.button_stop).setOnClickListener(view1 -> {
-            Intent intent = new Intent(getActivity(), TestService.class);
+            Intent intent = new Intent(getActivity(), MeasureService.class);
             Log.i(TAG, "Intent made");
             getActivity().stopService(intent);
         });
     }
 
-    @Override
-    public void onUpdate(double instantDB) {
-        this.dBvalue = instantDB;
-        String text = String.format(Locale.US, "%.02f", instantDB) + " dB";
-        this.dBreading.setText(text);
-    }
+//    @Override
+//    public void onUpdate(double instantDB) {
+//        this.dBvalue = instantDB;
+//        String text = String.format(Locale.US, "%.02f", instantDB) + " dB";
+//        this.dBreading.setText(text);
+//    }
 }

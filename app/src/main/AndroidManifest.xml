@@ -10,9 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectNoise">
         <service
-            android:name=".services.TestService"
+            android:name=".services.MeasureService"
             android:enabled="true"
             android:exported="true"></service>
+        <service
+            android:name=".services.TestService"
+            android:enabled="true"
+            android:exported="true" />
 
         <activity
             android:name=".MainActivity"
@@ -24,6 +28,7 @@
             </intent-filter>
         </activity>
     </application>
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
 </manifest>
