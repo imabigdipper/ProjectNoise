@@ -10,9 +10,10 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Build;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -49,8 +50,8 @@ public class MeasureService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+        // Creates notification channel & notification in preparation to launch service in foreground
         createNotificationChannel();
-
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
@@ -58,7 +59,8 @@ public class MeasureService extends Service {
         startForeground(1, createForegroundNotification(pendingIntent));
         Log.i(TAG, "Started in Foreground");
 
-        // Offload work to background thread
+        // TODO Find a way to set up the calibration variable before starting the measuring thread
+        // Helper function to set up thread for measuring sound data
         startRecorder();
 
         return  START_STICKY;
@@ -95,57 +97,63 @@ public class MeasureService extends Service {
     }
 
 
-
-
-
-
-
-
-
-
     /**
-     * dB measuring code using AudioRecord. Borrowed from:
-     *  https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
+     * This chunk of the service is all about the dB measuring process
      **/
 
     private static final String TAG = "Measure Service";
+
+    long interval = 5000;
 
     // AudioRecord instance configuration
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
     private static final int SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION;
-    int bufferSize = 8192; // 2 ^ 13, necessary for the fft
 
-    private DoubleFFT_1D transform = new DoubleFFT_1D(8192);
+    int bufferSize = 8192; // 2 ^ 13, necessary for the fft
+    private final DoubleFFT_1D transform = new DoubleFFT_1D(8192);
+
+
     private AudioRecord recorder;
-    private Thread recorderThread;
+    private HandlerThread handlerThread;
+    private android.os.Handler handler;
 
     private double calibration = 0;
     private boolean isRecording = false;
 
-    private void startRecorder() {
-        // Record for 1m
-         long endTime = System.currentTimeMillis()+ 100000;
 
-        recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
-        recorder.startRecording();
-        isRecording = true;
+    /** Runnable executed inside the HandlerThread. Measures sound data over the given interval then calculates average dB. Re-invokes itself until service is killed. Heavily based on:
+     * https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
+     */
 
-        short[] buffer = new short[bufferSize];
+    Runnable measureRunnable = new Runnable() {
+        @Override
+        public void run() {
+            long startTime = SystemClock.uptimeMillis();
+            long measureTime = SystemClock.uptimeMillis() + interval;
+            Log.d(TAG, "Measuring for " + (interval / 1000) + " seconds");
+            try {
+                recorder.startRecording();
+                isRecording = true;
+            } catch (Exception e) {
+                Log.e(TAG, "AudioRecord not initialized");
+                return;
+            }
 
-        // Define and run thread to do AudioRecord background work
-        Thread recorderThread = new Thread((() -> {
+            short[] buffer = new short[bufferSize];
             double dB;
-            double average;
             double dbSumTotal = 0;
             double instant;
             int count = 0;
+            double average = 0;
 
-            // Continuously read audio into buffer for 1m
-            while (System.currentTimeMillis() < endTime) {
+            // Continuously read audio into buffer for measureTime ms
+            while (SystemClock.uptimeMillis() < measureTime) {
                 recorder.read(buffer, 0, bufferSize);
-                //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byt
+
+                //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
+
                 dB = doFFT(buffer); // Perform Fast Fourier Transform
                 if (dB != Double.NEGATIVE_INFINITY) {
                     dbSumTotal += dB;
@@ -153,13 +161,41 @@ public class MeasureService extends Service {
                 }
                 average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
                 instant = 20 * Math.log10(dB) + 8.25 + calibration;
-                Log.i(TAG, "instant: " + instant);
-                Log.i(TAG, "average: " + average);
+//                Log.i(TAG, "instant: " + instant);
+//                Log.i(TAG, "average: " + average);
             }
-        }), "AudioRecorder Thread");
+            recorder.stop();
+            Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
+            // TODO export average and time to file
 
-        Log.i(TAG, "Starting recorder thread");
-        recorderThread.start();
+            long endTime = SystemClock.uptimeMillis();
+            long wait = 10000 - (endTime - startTime);
+            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
+
+            // Check if recording service has ended or not
+            if (isRecording) {
+                // Call the runnable again to measure average of next time block
+                handler.postDelayed(this, wait);
+            } else {
+                // Thread is done recording, release AudioRecord instance
+                Log.d(TAG, "Stopping measuring thread");
+                recorder.release();
+                recorder = null;
+                Log.d(TAG, "Successfully released AudioRecord instance");
+            }
+        }
+    };
+
+
+    /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
+
+    private void startRecorder() {
+        recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
+        // Handler and HandlerThread setup
+        handlerThread = new HandlerThread("measureThread");
+        handlerThread.start();
+        handler = new android.os.Handler(handlerThread.getLooper());
+        handler.post(measureRunnable);
     }
 
     public void stopRecorder() {
@@ -167,23 +203,17 @@ public class MeasureService extends Service {
         if (recorder != null) {
             isRecording = false;
             try {
-                recorderThread.join();
-                //fos.close();
+                handler.removeCallbacksAndMessages(null);
+                handlerThread.quit();
             } catch (Exception e) {
                 Log.d(TAG,
-                        "Primary thread cannot wait for secondary audio thread to close");
+                        "handlerThread failed to quit");
             }
-
-            // Properly stop and release AudioRecord instance
-            recorder.stop();
-            recorder.release();
-            recorder = null;
-            recorderThread = null;
         }
     }
 
 
-    /** Helper function to do Fast Fourier Transform. Uses JTransforms dependency **/
+    /** Helper function to do Fast Fourier Transform using JTransforms**/
 
     private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
