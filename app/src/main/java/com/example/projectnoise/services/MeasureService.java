@@ -14,6 +14,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -24,8 +26,13 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
+    private static final String FILE_NAME = "example.txt";
 
 
     @Override
@@ -167,6 +174,8 @@ public class MeasureService extends Service {
             recorder.stop();
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             // TODO export average and time to file
+            String log = "Average dB over " + interval + " seconds: " + average;
+            write(log);
 
             long endTime = SystemClock.uptimeMillis();
             long wait = 10000 - (endTime - startTime);
@@ -235,4 +244,34 @@ public class MeasureService extends Service {
         }
         return avg / rawData.length;
     }
+
+    public void write(String text){
+
+        FileOutputStream fos = null;
+
+        try {
+            fos = openFileOutput(FILE_NAME, MODE_PRIVATE);
+            fos.write(text.getBytes());
+
+
+            Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        finally {
+            if(fos!=null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+
 }
