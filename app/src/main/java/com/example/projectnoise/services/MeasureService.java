@@ -158,23 +158,20 @@ public class MeasureService extends Service {
             // Continuously read audio into buffer for measureTime ms
             while (SystemClock.uptimeMillis() < measureTime) {
                 recorder.read(buffer, 0, bufferSize);
-
                 //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-
                 dB = doFFT(buffer); // Perform Fast Fourier Transform
                 if (dB != Double.NEGATIVE_INFINITY) {
                     dbSumTotal += dB;
                     count++;
                 }
                 average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
-                instant = 20 * Math.log10(dB) + 8.25 + calibration;
-//                Log.i(TAG, "instant: " + instant);
-//                Log.i(TAG, "average: " + average);
+                // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
+
             recorder.stop();
-            Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
-            // TODO export average and time to file
-            String log = "Average dB over " + interval + " seconds: " + average;
+
+            String log = "Average dB over " + (interval / 1000) + " seconds: " + average;
+            Log.i(TAG, log);
             write(log);
 
             long endTime = SystemClock.uptimeMillis();
@@ -255,13 +252,9 @@ public class MeasureService extends Service {
 
 
             Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        finally {
+        } finally {
             if(fos!=null){
                 try {
                     fos.close();
