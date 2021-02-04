@@ -14,6 +14,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -24,8 +26,13 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
+    private static final String FILE_NAME = "example.txt";
 
 
     @Override
@@ -151,23 +158,23 @@ public class MeasureService extends Service {
             // Continuously read audio into buffer for measureTime ms
             while (SystemClock.uptimeMillis() < measureTime) {
                 recorder.read(buffer, 0, bufferSize);
-
                 //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-
                 dB = doFFT(buffer); // Perform Fast Fourier Transform
                 if (dB != Double.NEGATIVE_INFINITY) {
                     dbSumTotal += dB;
                     count++;
                 }
                 average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
-                instant = 20 * Math.log10(dB) + 8.25 + calibration;
-//                Log.i(TAG, "instant: " + instant);
-//                Log.i(TAG, "average: " + average);
+                // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
-            recorder.stop();
-            Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
-            // TODO export average and time to file
 
+            recorder.stop();
+
+            String log = "Average dB over " + (interval / 1000) + " seconds: " + average;
+            Log.i(TAG, log);
+            write(log);
+
+            // send data to home fragment
             long endTime = SystemClock.uptimeMillis();
             long wait = 10000 - (endTime - startTime);
             Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
@@ -235,4 +242,30 @@ public class MeasureService extends Service {
         }
         return avg / rawData.length;
     }
+
+    public void write(String text){
+
+        FileOutputStream fos = null;
+
+        try {
+            fos = openFileOutput(FILE_NAME, MODE_APPEND);
+            fos.write(text.getBytes());
+
+
+            Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if(fos!=null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+
 }

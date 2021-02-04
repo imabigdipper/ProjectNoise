@@ -3,6 +3,10 @@ package com.example.projectnoise;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -53,7 +57,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /** Helper functions to establish mic permissions **/
+    /**
+     * Helper functions to establish mic permissions
+     **/
 
     private void setupPermissions() {
         if (ContextCompat.checkSelfPermission(this,
