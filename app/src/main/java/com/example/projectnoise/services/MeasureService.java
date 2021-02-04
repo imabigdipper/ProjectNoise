@@ -174,6 +174,7 @@ public class MeasureService extends Service {
             Log.i(TAG, log);
             write(log);
 
+            // send data to home fragment
             long endTime = SystemClock.uptimeMillis();
             long wait = 10000 - (endTime - startTime);
             Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
@@ -247,7 +248,7 @@ public class MeasureService extends Service {
         FileOutputStream fos = null;
 
         try {
-            fos = openFileOutput(FILE_NAME, MODE_PRIVATE);
+            fos = openFileOutput(FILE_NAME, MODE_APPEND);
             fos.write(text.getBytes());
 
 
