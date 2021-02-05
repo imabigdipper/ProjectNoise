@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         // Builds your notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, null)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Project Noise")
+                .setContentTitle("DB level meter")
                 .setContentText("Db level exceed!");
 
         // Creates the intent needed to show the notification
