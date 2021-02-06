@@ -125,8 +125,6 @@ public class MeasureService extends Service {
         }
     }
 
-
-
     /**
      * This chunk of the service is all about the dB measuring process
      **/
