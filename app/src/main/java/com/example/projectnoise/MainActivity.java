@@ -3,16 +3,12 @@ package com.example.projectnoise;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -43,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create notification channel for our app, and ask for mic permission on startup.
         createNotificationChannel();
-        addNotification();
+        //addNotification();
         setupPermissions();
 
     }
@@ -91,24 +87,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void addNotification() {
-
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher_round)
-                        .setContentTitle("Notifications Example")
-                        .setContentText("This is a test notification");
-        Log.i(TAG, "I am in Main activity");
-
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(contentIntent);
-
-        // Add as notification
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(FM_NOTIFICATION_ID, builder.build());
-    }
+//    private void addNotification() {
+//
+//        NotificationCompat.Builder builder =
+//                new NotificationCompat.Builder(this)
+//                        .setSmallIcon(R.mipmap.ic_launcher_round)
+//                        .setContentTitle("Notifications Example")
+//                        .setContentText("This is a test notification");
+//        Log.i(TAG, "I am in Main activity");
+//
+//        Intent notificationIntent = new Intent(this, MainActivity.class);
+//        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+//                PendingIntent.FLAG_UPDATE_CURRENT);
+//        builder.setContentIntent(contentIntent);
+//
+//        // Add as notification
+//        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//        manager.notify(FM_NOTIFICATION_ID, builder.build());
+//    }
 
     //   Creates and displays a notification
 //    private void addNotification() {

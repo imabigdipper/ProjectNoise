@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -31,7 +32,7 @@ import java.io.IOException;
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
     private static final String FILE_NAME = "example.txt";
-    private static final int FM_NOTIFICATION_ID = 9;
+    //private static final int FM_NOTIFICATION_ID = 2;
 
 
     @Override
@@ -60,7 +61,7 @@ public class MeasureService extends Service {
 
 
         createNotificationChannel();
-
+        int notificationId = 1;
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
@@ -69,9 +70,18 @@ public class MeasureService extends Service {
         startForeground(1, createForegroundNotification(pendingIntent));
         Log.i(TAG, "Started in Foreground");
 
-        Intent notificationIntent2 = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent2 = PendingIntent.getActivity(this, 0, notificationIntent2, 0);
-        startForeground(2, addNotification(pendingIntent));
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle("Notification title")
+                .setContentText("Content text");
+
+        // Obtain NotificationManager system service in order to show the notification
+//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//        notificationManager.notify(notificationId, mBuilder.build());
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(0, mBuilder.build());
+
 
 
         // TODO Find a way to set up the calibration variable before starting the measuring thread
@@ -80,16 +90,7 @@ public class MeasureService extends Service {
 
         return  START_STICKY;
     }
-    private Notification addNotification(PendingIntent pendingIntent) {
 
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setOngoing(true)
-                .setContentTitle("DB level check")
-                .setContentText("Hello")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentIntent(pendingIntent)
-                .build();
-    }
 
 
 
