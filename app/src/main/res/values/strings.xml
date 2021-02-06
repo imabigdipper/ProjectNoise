@@ -8,4 +8,6 @@
     <string name="button_stop_text">Stop Service</string>
     <string name="home_frag_text">Service Panel</string>
     <string name="db_reading">0</string>
+    <string name="notification_title">Hello</string>
+    <string name="notification_text">Db level test</string>
 </resources>

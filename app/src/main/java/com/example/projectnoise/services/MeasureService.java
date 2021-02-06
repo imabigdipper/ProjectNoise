@@ -14,7 +14,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -26,13 +25,13 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
     private static final String FILE_NAME = "example.txt";
+    private static final int FM_NOTIFICATION_ID = 9;
 
 
     @Override
@@ -58,7 +57,11 @@ public class MeasureService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         // Creates notification channel & notification in preparation to launch service in foreground
+
+
         createNotificationChannel();
+
+
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
@@ -66,17 +69,35 @@ public class MeasureService extends Service {
         startForeground(1, createForegroundNotification(pendingIntent));
         Log.i(TAG, "Started in Foreground");
 
+        Intent notificationIntent2 = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent2 = PendingIntent.getActivity(this, 0, notificationIntent2, 0);
+        startForeground(2, addNotification(pendingIntent));
+
+
         // TODO Find a way to set up the calibration variable before starting the measuring thread
         // Helper function to set up thread for measuring sound data
         startRecorder();
 
         return  START_STICKY;
     }
+    private Notification addNotification(PendingIntent pendingIntent) {
+
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setOngoing(true)
+                .setContentTitle("DB level check")
+                .setContentText("Hello")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .build();
+    }
+
 
 
     /** Helper function to create foreground notification **/
 
     private Notification createForegroundNotification(PendingIntent pendingIntent) {
+
+
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setOngoing(true)
@@ -102,6 +123,7 @@ public class MeasureService extends Service {
             manager.createNotificationChannel(serviceChannel);
         }
     }
+
 
 
     /**
@@ -218,6 +240,7 @@ public class MeasureService extends Service {
             }
         }
     }
+
 
 
     /** Helper function to do Fast Fourier Transform using JTransforms**/
