@@ -126,7 +126,7 @@ public class MeasureService extends Service {
     private HandlerThread handlerThread;
     private android.os.Handler handler;
 
-    private double calibration = 0;
+    private final double calibration = 0;
     private boolean isRecording = false;
 
 
