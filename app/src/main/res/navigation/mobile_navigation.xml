@@ -14,7 +14,7 @@
     <fragment
         android:id="@+id/navigation_preferences"
         android:name="com.example.projectnoise.ui.preferences.SettingsFragment"
-        android:label="@string/title_dashboard"
+        android:label="@string/title_settings"
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
