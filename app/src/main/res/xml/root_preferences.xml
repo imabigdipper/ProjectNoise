@@ -1,0 +1,24 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory app:title="@string/measuring_header">
+
+        <EditTextPreference
+            android:inputType="numberSigned"
+            app:key="calibration"
+            app:title="@string/calibration_title"
+            app:useSimpleSummaryProvider="true" />
+
+
+        <com.takisoft.preferencex.TimePickerPreference
+            app:key="measureStartTime"
+            app:title="@string/measureStartTime_title"
+            app:useSimpleSummaryProvider="true" />
+
+
+        <com.takisoft.preferencex.TimePickerPreference
+            app:key="measureEndTime"
+            app:title="@string/measureStopTime_title"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

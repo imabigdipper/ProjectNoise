@@ -12,8 +12,8 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.projectnoise.ui.dashboard.DashboardFragment"
+        android:id="@+id/navigation_preferences"
+        android:name="com.example.projectnoise.ui.preferences.SettingsFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_dashboard" />
 
