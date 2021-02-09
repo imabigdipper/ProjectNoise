@@ -144,7 +144,7 @@ public class MeasureService extends Service {
         @Override
         public void run() {
             long startTime = SystemClock.uptimeMillis();
-            long measureTime = SystemClock.uptimeMillis() + interval;
+            long measureTime = SystemClock.uptimeMillis() + (1000 * Integer.parseInt(preferences.getString("average_interval", "60")));
             Log.d(TAG, "Measuring for " + (interval / 1000) + " seconds");
             try {
                 recorder.startRecording();
@@ -180,14 +180,14 @@ public class MeasureService extends Service {
             Log.i(TAG, log);
             write(log);
 
-            long endTime = SystemClock.uptimeMillis();
-            long wait = 10000 - (endTime - startTime);
-            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
+//            long endTime = SystemClock.uptimeMillis();
+//            long wait = 10000 - (endTime - startTime);
+//            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
 
             // Check if recording service has ended or not
             if (isRecording) {
                 // Call the runnable again to measure average of next time block
-                handler.postDelayed(this, wait);
+                handler.post(this);
             } else {
                 // Thread is done recording, release AudioRecord instance
                 Log.d(TAG, "Stopping measuring thread");

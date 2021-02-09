@@ -4,6 +4,20 @@
         app:iconSpaceReserved="false"
         app:title="@string/measuring_header">
 
+        <EditTextPreference
+            android:inputType="numberDecimal"
+            app:iconSpaceReserved="false"
+            app:key="average_interval"
+            app:title="@string/average_interval_title"
+            app:summary="Interval over which the rolling average dB levels will be taken, in seconds" />
+
+        <EditTextPreference
+            android:inputType="numberDecimal"
+            app:iconSpaceReserved="false"
+            app:key="db_threshold"
+            app:title="@string/db_threshold_title"
+            app:summary="dB threshold at which the app will notify the user" />
+
         <SwitchPreference
             app:iconSpaceReserved="false"
             app:key="toggle_calibration"
