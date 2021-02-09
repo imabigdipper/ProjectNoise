@@ -184,7 +184,7 @@ public class MeasureService extends Service {
             SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
             String time = sdf.format( currentTime);
             String date = stf.format(currentTime);
-            String log = "Date: " + date + " time: " + time + " db level: " + average;
+            String log = date + "," + time + "," + average;
             write(log);
 
             long endTime = SystemClock.uptimeMillis();
@@ -260,7 +260,7 @@ public class MeasureService extends Service {
         FileOutputStream fos = null;
 
         try {
-            fos = openFileOutput(FILE_NAME, MODE_PRIVATE);
+            fos = openFileOutput(FILE_NAME, MODE_APPEND);
             fos.write(text.getBytes());
 
 
