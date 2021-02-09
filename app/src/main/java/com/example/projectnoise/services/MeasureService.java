@@ -184,7 +184,7 @@ public class MeasureService extends Service {
             SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
             String time = sdf.format( currentTime);
             String date = stf.format(currentTime);
-            String log = date + "," + time + "," + average;
+            String log = date + "," + time + "," + average + "\n";
             write(log);
 
             long endTime = SystemClock.uptimeMillis();
