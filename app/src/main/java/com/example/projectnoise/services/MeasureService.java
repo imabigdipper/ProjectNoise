@@ -175,6 +175,7 @@ public class MeasureService extends Service {
             double instant;
             int count = 0;
             double average = 0;
+            double threshold_initial = 3.2;
 
             // Continuously read audio into buffer for measureTime ms
             while (SystemClock.uptimeMillis() < measureTime) {
@@ -190,6 +191,10 @@ public class MeasureService extends Service {
             }
 
             recorder.stop();
+
+
+
+            db_checker(average, threshold_initial);
 
             String log = "Average dB over " + (interval / 1000) + " seconds: " + average;
             Log.i(TAG, log);
@@ -214,8 +219,19 @@ public class MeasureService extends Service {
         }
     };
 
+    /** Helper function to check if the db is over the threshold
+     * Just the basic implementation  **/
 
-    /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
+    private void db_checker(double d, double t){
+        if (d>=t) {
+            Log.d(TAG, "Db level is above the threshold");
+            Log.d(TAG, "Sending Notification to home dashboard.....!!");
+        }
+    }
+
+
+
+     /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
 
     private void startRecorder() {
         recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
