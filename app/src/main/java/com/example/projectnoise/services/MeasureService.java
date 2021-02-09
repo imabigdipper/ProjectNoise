@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import com.example.projectnoise.MainActivity;
 import com.example.projectnoise.R;
@@ -33,11 +35,13 @@ import java.io.IOException;
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
     private static final String FILE_NAME = "example.txt";
+    private SharedPreferences preferences;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -57,6 +61,7 @@ public class MeasureService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+
         // Creates notification channel & notification in preparation to launch service in foreground
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -64,11 +69,12 @@ public class MeasureService extends Service {
 
         // Start foreground service with given foreground notification
         startForeground(1, createForegroundNotification(pendingIntent));
-        Log.i(TAG, "Started in Foreground");
+        Log.d(TAG, "Started in Foreground");
 
         // TODO Find a way to set up the calibration variable before starting the measuring thread
         // Helper function to set up thread for measuring sound data
         startRecorder();
+        Log.d(TAG, "Starting measureService thread with calibration: " + Integer.valueOf(preferences.getString("calibration", "0")));
 
         return  START_STICKY;
     }
@@ -164,7 +170,7 @@ public class MeasureService extends Service {
                     dbSumTotal += dB;
                     count++;
                 }
-                average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
+                average = 20 * Math.log10(dbSumTotal / count) + 8.25 + Integer.parseInt(preferences.getString("calibration", "0"));
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
 
@@ -174,7 +180,6 @@ public class MeasureService extends Service {
             Log.i(TAG, log);
             write(log);
 
-            // send data to home fragment
             long endTime = SystemClock.uptimeMillis();
             long wait = 10000 - (endTime - startTime);
             Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
