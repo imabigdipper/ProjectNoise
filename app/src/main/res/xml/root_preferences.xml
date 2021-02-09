@@ -1,27 +1,46 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory app:title="@string/measuring_header"
-        app:iconSpaceReserved="false">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/measuring_header">
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="toggle_calibration"
+            app:title="@string/toggle_calibration_title"
+            app:summary="Toggles calibration of measured dB"
+            app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
-            app:iconSpaceReserved="false"
-            android:inputType="numberSigned"
+            app:dependency="toggle_calibration"
+            android:inputType="numberDecimal|numberSigned"
+            app:iconSpaceReserved="true"
             app:key="calibration"
             app:title="@string/calibration_title"
+            app:summary="(+/-) float"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="service_scheduling"
+            app:title="@string/service_scheduling_title"
+            app:summary="Toggles ability to schedule dB measuring service"
+            app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.TimePickerPreference
-            app:iconSpaceReserved="false"
+            app:dependency="service_scheduling"
+            app:iconSpaceReserved="true"
             app:key="measureStartTime"
             app:title="@string/measureStartTime_title"
+            app:summary="The time at which the dB measuring service will automatically start recording"
             app:useSimpleSummaryProvider="true" />
 
-
         <com.takisoft.preferencex.TimePickerPreference
-            app:iconSpaceReserved="false"
+            app:dependency="service_scheduling"
+            app:iconSpaceReserved="true"
             app:key="measureEndTime"
             app:title="@string/measureStopTime_title"
+            app:summary="The time at which the dB measuring service will automatically stop recording"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
