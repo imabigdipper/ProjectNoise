@@ -17,6 +17,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
@@ -29,6 +32,7 @@ import org.jtransforms.fft.DoubleFFT_1D;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
@@ -174,7 +178,13 @@ public class MeasureService extends Service {
             recorder.stop();
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             // TODO export average and time to file
-            String log = "Average dB over " + interval + " seconds: " + average;
+            // TODO edit log so it shows date and stuff
+            Date currentTime = Calendar.getInstance().getTime();
+            SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
+            SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
+            String time = sdf.format( currentTime);
+            String date = stf.format(currentTime);
+            String log = "Date: " + date + " time: " + time + " db level: " + average;
             write(log);
 
             long endTime = SystemClock.uptimeMillis();
