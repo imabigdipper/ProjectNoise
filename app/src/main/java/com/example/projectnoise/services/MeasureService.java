@@ -193,6 +193,8 @@ public class MeasureService extends Service {
             recorder.stop();
 
 
+            /** check if the db is above the mentioned threshold
+             * Sponsor can set the threshold limit in variable threshold_initial **/
 
             db_checker(average, threshold_initial);
 
