@@ -153,21 +153,14 @@ public class MeasureService extends Service {
         public void run() {
             long startTime = SystemClock.uptimeMillis();
             long measureTime = SystemClock.uptimeMillis() + (1000 * interval);
-            Log.d(TAG, "Measuring for " + interval + " seconds");
-            try {
-                recorder.startRecording();
-                isRecording = true;
-            } catch (Exception e) {
-                Log.e(TAG, "AudioRecord not initialized");
-                return;
-            }
-
             short[] buffer = new short[bufferSize];
             double dB;
             double dbSumTotal = 0;
             double instant;
             int count = 0;
             double average = 0;
+
+            Log.d(TAG, "Measuring for " + interval + " seconds");
 
             // Continuously read audio into buffer for measureTime ms
             while (SystemClock.uptimeMillis() < measureTime && isRecording) {
@@ -187,8 +180,7 @@ public class MeasureService extends Service {
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
 
-            recorder.stop();
-            String log = "Average dB over " + (interval / 1000) + " seconds: " + average;
+            String log = "Average dB over " + interval + " seconds: " + average;
             Log.i(TAG, log);
             write(log);
             threshCheck(average);
@@ -215,7 +207,14 @@ public class MeasureService extends Service {
     /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
 
     private void startRecorder() {
-        recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
+        try {
+            recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
+            recorder.startRecording();
+            isRecording = true;
+        } catch (Exception e) {
+            Log.e(TAG, "AudioRecord not initialized");
+            return;
+        }
         // Handler and HandlerThread setup
         handlerThread = new HandlerThread("measureThread");
         handlerThread.start();
@@ -231,6 +230,7 @@ public class MeasureService extends Service {
         if (recorder != null) {
             isRecording = false;
             try {
+                recorder.stop();
                 handler.removeCallbacksAndMessages(null);
                 handlerThread.quit();
             } catch (Exception e) {
