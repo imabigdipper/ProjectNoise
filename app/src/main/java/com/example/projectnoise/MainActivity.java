@@ -36,23 +36,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-        // Create notification channel for our app, and ask for mic permission on startup.
-        createNotificationChannel();
+        // Ask for mic permission on startup.
         setupPermissions();
     }
-
-    private void createNotificationChannel() {
-        CharSequence name = "PN Channel";
-        String description = "PN notifications";
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel channel = new NotificationChannel(getString(R.string.channel_id), name, importance);
-        channel.setDescription(description);
-
-        NotificationManager notificationManager = this.getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-    }
-
-
 
 
     /**

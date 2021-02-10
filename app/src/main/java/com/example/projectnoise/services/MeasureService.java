@@ -15,7 +15,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -28,7 +27,6 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -65,9 +63,9 @@ public class MeasureService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-        // Start foreground service with given foreground notification
+        // Start foreground service with given foreground notification & initialize preference variables
         startForeground(1, createForegroundNotification(pendingIntent));
-        Log.d(TAG, "Started in Foreground");
+        initPrefs();
 
         // Helper function to set up thread for measuring sound data
         startRecorder();
@@ -106,13 +104,27 @@ public class MeasureService extends Service {
     }
 
 
+    /** Initialize variables from preferences to minimize getPreference calls **/
+
+    private void initPrefs() {
+        interval = Long.parseLong(preferences.getString("average_interval", "60"));
+        calibration = Double.parseDouble(preferences.getString("calibration", "0"));
+        toggle_calibration = preferences.getBoolean("toggle_calibration", false);
+    }
+
+
+
+
     /**
      * This chunk of the service is all about the dB measuring process
      **/
 
     private static final String TAG = "Measure Service";
 
-    long interval = 5000;
+    // Preference variables
+    private long interval;
+    private double calibration;
+    private boolean toggle_calibration;
 
     // AudioRecord instance configuration
     private static final int SAMPLE_RATE = 44100;
@@ -128,7 +140,6 @@ public class MeasureService extends Service {
     private HandlerThread handlerThread;
     private android.os.Handler handler;
 
-    private double calibration = 0;
     private boolean isRecording = false;
 
 
@@ -136,12 +147,13 @@ public class MeasureService extends Service {
      * https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
      */
 
+
     Runnable measureRunnable = new Runnable() {
         @Override
         public void run() {
             long startTime = SystemClock.uptimeMillis();
-            long measureTime = SystemClock.uptimeMillis() + (1000 * Integer.parseInt(preferences.getString("average_interval", "60")));
-            Log.d(TAG, "Measuring for " + (interval / 1000) + " seconds");
+            long measureTime = SystemClock.uptimeMillis() + (1000 * interval);
+            Log.d(TAG, "Measuring for " + interval + " seconds");
             try {
                 recorder.startRecording();
                 isRecording = true;
@@ -167,15 +179,15 @@ public class MeasureService extends Service {
                     count++;
                 }
 
-                average = preferences.getBoolean("toggle_calibration", false)
-                        ? 20 * Math.log10(dbSumTotal / count) + 8.25 + Integer.parseInt(preferences.getString("calibration", "0"))
+                // Check if calibration is enabled
+                average = toggle_calibration ?
+                        20 * Math.log10(dbSumTotal / count) + 8.25 + calibration
                         : 20 * Math.log10(dbSumTotal / count) + 8.25;
 
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
 
             recorder.stop();
-
             String log = "Average dB over " + (interval / 1000) + " seconds: " + average;
             Log.i(TAG, log);
             write(log);
@@ -211,6 +223,9 @@ public class MeasureService extends Service {
         handler.post(measureRunnable);
     }
 
+
+    /** Releases and cleans AudioRecord, Handler, and HandlerThread instances. **/
+
     private void stopRecorder() {
         Log.i(TAG, "Stopping the audio stream");
         if (recorder != null) {
@@ -219,14 +234,13 @@ public class MeasureService extends Service {
                 handler.removeCallbacksAndMessages(null);
                 handlerThread.quit();
             } catch (Exception e) {
-                Log.d(TAG,
-                        "handlerThread failed to quit");
+                Log.d(TAG, "handlerThread failed to quit");
             }
         }
     }
 
 
-    /** Helper function to do Fast Fourier Transform using JTransforms**/
+    /** Helper function to do Fast Fourier Transform using JTransforms **/
 
     private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
@@ -236,10 +250,8 @@ public class MeasureService extends Service {
         for (int i = 0; i < rawData.length; i++) {
             fft[i] = rawData[i] / ((double) Short.MAX_VALUE);
         }
-
         // FFT
         transform.realForwardFull(fft);
-
         // Calculate the sum of amplitudes
         for (int i = 0; i < fft.length; i += 2) {
             //                              reals                 imaginary
@@ -249,6 +261,27 @@ public class MeasureService extends Service {
         return avg / rawData.length;
     }
 
+
+    /** Function that writes average dB to log file **/
+
+    private void write(String text){
+        FileOutputStream fos = null;
+
+        try {
+            fos = openFileOutput(FILE_NAME, MODE_APPEND);
+            fos.write(text.getBytes());
+            Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
+        } catch (IOException e) { e.printStackTrace();
+        } finally {
+            if(fos!=null){
+                try { fos.close(); }
+                catch (IOException e) { e.printStackTrace(); }
+            }
+        }
+    }
+
+
+    /** Helper function check threshold and display notification if necessary **/
 
     private void threshCheck(double average) {
         if (average > Integer.parseInt(preferences.getString("db_threshold", "150"))) {
@@ -261,6 +294,8 @@ public class MeasureService extends Service {
     }
 
 
+    /** Helper function to create threshold notification **/
+
     private Notification createThresholdNotification(PendingIntent pendingIntent) {
         Log.d(TAG, "Creating thresh notification...");
         return new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -270,31 +305,4 @@ public class MeasureService extends Service {
                 .setContentIntent(pendingIntent)
                 .build();
     }
-
-
-
-    /** Function that writes average dB to log file **/
-
-    private void write(String text){
-        FileOutputStream fos = null;
-
-        try {
-            fos = openFileOutput(FILE_NAME, MODE_APPEND);
-            fos.write(text.getBytes());
-            Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if(fos!=null){
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-    }
-
-
 }
