@@ -14,13 +14,12 @@ import android.os.Build;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.preference.PreferenceManager;
 
 import com.example.projectnoise.MainActivity;
 import com.example.projectnoise.R;
@@ -28,7 +27,6 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
