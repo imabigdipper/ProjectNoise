@@ -26,4 +26,6 @@
     <string name="measureStartTime_title">Start time</string>
     <string name="service_scheduling_title">Service Scheduling</string>
     <string name="toggle_calibration_title">Calibration</string>
+    <string name="average_interval_title">Averaging Interval</string>
+    <string name="db_threshold_title">dB Notification Threshold</string>
 </resources>
