@@ -247,9 +247,13 @@ public class MeasureService extends Service {
         return avg / rawData.length;
     }
 
-
+    /** function check if the db level is larger then provided threshold
+     * Then create and notify the user
+     * @param average
+     */
     private void threshCheck(double average) {
         if (average > Integer.parseInt(preferences.getString("db_threshold", "150"))) {
+            // Creates an explicit intent for an Activity in your app
             Intent notificationIntent = new Intent(this, MainActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
             NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
@@ -261,6 +265,7 @@ public class MeasureService extends Service {
 
     private Notification createThresholdNotification(PendingIntent pendingIntent) {
         Log.d(TAG, "Creating thresh notification...");
+        // Add as notification
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Measure Service")
                 .setContentText("dB has exceeded threshold")
