@@ -15,13 +15,12 @@ import android.os.Build;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.preference.PreferenceManager;
 
 import com.example.projectnoise.MainActivity;
 import com.example.projectnoise.R;
@@ -29,7 +28,6 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -176,7 +174,7 @@ public class MeasureService extends Service {
             double instant;
             int count = 0;
             double average = 0;
-            double threshold_initial = 3.2;
+
 
             // Continuously read audio into buffer for measureTime ms
             while (SystemClock.uptimeMillis() < measureTime) {
@@ -195,9 +193,9 @@ public class MeasureService extends Service {
 
 
             /** check if the db is above the mentioned threshold
-             * Sponsor can set the threshold limit in variable threshold_initial **/
+             * Sponsor can set the threshold limit in setting menu **/
 
-            db_checker(average, threshold_initial);
+            db_checker(average);
 
             String log = "Average dB over " + (interval / 1000) + " seconds: " + average;
             Log.i(TAG, log);
@@ -224,8 +222,11 @@ public class MeasureService extends Service {
     /** Helper function to check if the db is over the threshold
      * Just the basic implementation  **/
 
-    private void db_checker(double d, double t){
-        if (d>=t) {
+    private void db_checker(double db){
+        double threshold_default = 1.2;
+
+
+        if (db > Integer.parseInt(preferences.getString("db_threshold", "threshold_default"))) {
             Log.d(TAG, "Db level is above the threshold");
             Log.d(TAG, "Sending Notification to home dashboard.....!!");
         }
