@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -15,10 +16,12 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import com.example.projectnoise.MainActivity;
 import com.example.projectnoise.R;
@@ -26,18 +29,21 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
     private static final String FILE_NAME = "example.txt";
+    private SharedPreferences preferences;
     //private static final int FM_NOTIFICATION_ID = 2;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -58,8 +64,6 @@ public class MeasureService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         // Creates notification channel & notification in preparation to launch service in foreground
-
-
         createNotificationChannel();
         int notificationId = 1;
 
@@ -68,7 +72,7 @@ public class MeasureService extends Service {
 
         // Start foreground service with given foreground notification
         startForeground(1, createForegroundNotification(pendingIntent));
-        Log.i(TAG, "Started in Foreground");
+        Log.d(TAG, "Started in Foreground");
 
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
@@ -87,18 +91,15 @@ public class MeasureService extends Service {
         // TODO Find a way to set up the calibration variable before starting the measuring thread
         // Helper function to set up thread for measuring sound data
         startRecorder();
+        Log.d(TAG, "Starting measureService thread with calibration: " + Integer.valueOf(preferences.getString("calibration", "0")));
 
         return  START_STICKY;
     }
 
 
-
-
     /** Helper function to create foreground notification **/
 
     private Notification createForegroundNotification(PendingIntent pendingIntent) {
-
-
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setOngoing(true)
@@ -147,7 +148,7 @@ public class MeasureService extends Service {
     private HandlerThread handlerThread;
     private android.os.Handler handler;
 
-    private final double calibration = 0;
+    private double calibration = 0;
     private boolean isRecording = false;
 
 
@@ -159,7 +160,7 @@ public class MeasureService extends Service {
         @Override
         public void run() {
             long startTime = SystemClock.uptimeMillis();
-            long measureTime = SystemClock.uptimeMillis() + interval;
+            long measureTime = SystemClock.uptimeMillis() + (1000 * Integer.parseInt(preferences.getString("average_interval", "60")));
             Log.d(TAG, "Measuring for " + (interval / 1000) + " seconds");
             try {
                 recorder.startRecording();
@@ -186,7 +187,7 @@ public class MeasureService extends Service {
                     dbSumTotal += dB;
                     count++;
                 }
-                average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
+                average = 20 * Math.log10(dbSumTotal / count) + 8.25 + Integer.parseInt(preferences.getString("calibration", "0"));
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
 
@@ -202,15 +203,14 @@ public class MeasureService extends Service {
             Log.i(TAG, log);
             write(log);
 
-            // send data to home fragment
-            long endTime = SystemClock.uptimeMillis();
-            long wait = 10000 - (endTime - startTime);
-            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
+//            long endTime = SystemClock.uptimeMillis();
+//            long wait = 10000 - (endTime - startTime);
+//            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
 
             // Check if recording service has ended or not
             if (isRecording) {
                 // Call the runnable again to measure average of next time block
-                handler.postDelayed(this, wait);
+                handler.post(this);
             } else {
                 // Thread is done recording, release AudioRecord instance
                 Log.d(TAG, "Stopping measuring thread");
@@ -233,7 +233,7 @@ public class MeasureService extends Service {
 
 
 
-     /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
+    /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
 
     private void startRecorder() {
         recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
@@ -257,7 +257,6 @@ public class MeasureService extends Service {
             }
         }
     }
-
 
 
     /** Helper function to do Fast Fourier Transform using JTransforms**/
