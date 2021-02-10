@@ -143,6 +143,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+
     /**
      * Helper functions to establish mic permissions
      **/
@@ -151,6 +153,10 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Permission to record denied");
+            makeRequest();
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
             makeRequest();
         }
     }
