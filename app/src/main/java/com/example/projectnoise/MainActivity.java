@@ -30,35 +30,29 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
+                R.id.navigation_home, R.id.navigation_preferences, R.id.navigation_notifications)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-        // Create notification channel for our app, and ask for mic permission on startup.
-        createNotificationChannel();
+        // Ask for mic permission on startup.
         setupPermissions();
     }
 
-    private void createNotificationChannel() {
-        CharSequence name = "PN Channel";
-        String description = "PN notifications";
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel channel = new NotificationChannel(getString(R.string.channel_id), name, importance);
-        channel.setDescription(description);
 
-        NotificationManager notificationManager = this.getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-    }
-
-
-    /** Helper functions to establish mic permissions **/
+    /**
+     * Helper functions to establish mic permissions
+     **/
 
     private void setupPermissions() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Permission to record denied");
+            makeRequest();
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
             makeRequest();
         }
     }

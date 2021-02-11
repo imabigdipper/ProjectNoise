@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -14,7 +15,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
@@ -22,6 +22,7 @@ import java.util.Calendar;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import com.example.projectnoise.MainActivity;
 import com.example.projectnoise.R;
@@ -29,7 +30,6 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
@@ -37,11 +37,13 @@ import java.util.Date;
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
     private static final String FILE_NAME = "example.txt";
+    private SharedPreferences preferences;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -60,19 +62,18 @@ public class MeasureService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         // Creates notification channel & notification in preparation to launch service in foreground
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-        // Start foreground service with given foreground notification
+        // Start foreground service with given foreground notification & initialize preference variables
         startForeground(1, createForegroundNotification(pendingIntent));
-        Log.i(TAG, "Started in Foreground");
+        initPrefs();
 
-        // TODO Find a way to set up the calibration variable before starting the measuring thread
         // Helper function to set up thread for measuring sound data
         startRecorder();
+        Log.d(TAG, "Starting measureService thread with calibration: " + Integer.valueOf(preferences.getString("calibration", "0")));
 
         return  START_STICKY;
     }
@@ -81,7 +82,6 @@ public class MeasureService extends Service {
     /** Helper function to create foreground notification **/
 
     private Notification createForegroundNotification(PendingIntent pendingIntent) {
-
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setOngoing(true)
                 .setContentTitle("Measure Service")
@@ -99,7 +99,7 @@ public class MeasureService extends Service {
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
                     "Measure Service Channel",
-                    NotificationManager.IMPORTANCE_LOW
+                    NotificationManager.IMPORTANCE_HIGH
             );
 
             NotificationManager manager = getSystemService(NotificationManager.class);
@@ -108,13 +108,27 @@ public class MeasureService extends Service {
     }
 
 
+    /** Initialize variables from preferences to minimize getPreference calls **/
+
+    private void initPrefs() {
+        interval = Long.parseLong(preferences.getString("average_interval", "60"));
+        calibration = Double.parseDouble(preferences.getString("calibration", "0"));
+        toggle_calibration = preferences.getBoolean("toggle_calibration", false);
+    }
+
+
+
+
     /**
      * This chunk of the service is all about the dB measuring process
      **/
 
     private static final String TAG = "Measure Service";
 
-    long interval = 5000;
+    // Preference variables
+    private long interval;
+    private double calibration;
+    private boolean toggle_calibration;
 
     // AudioRecord instance configuration
     private static final int SAMPLE_RATE = 44100;
@@ -130,7 +144,6 @@ public class MeasureService extends Service {
     private HandlerThread handlerThread;
     private android.os.Handler handler;
 
-    private double calibration = 0;
     private boolean isRecording = false;
 
 
@@ -138,20 +151,12 @@ public class MeasureService extends Service {
      * https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
      */
 
+
     Runnable measureRunnable = new Runnable() {
         @Override
         public void run() {
             long startTime = SystemClock.uptimeMillis();
-            long measureTime = SystemClock.uptimeMillis() + interval;
-            Log.d(TAG, "Measuring for " + (interval / 1000) + " seconds");
-            try {
-                recorder.startRecording();
-                isRecording = true;
-            } catch (Exception e) {
-                Log.e(TAG, "AudioRecord not initialized");
-                return;
-            }
-
+            long measureTime = SystemClock.uptimeMillis() + (1000 * interval);
             short[] buffer = new short[bufferSize];
             double dB;
             double dbSumTotal = 0;
@@ -159,37 +164,38 @@ public class MeasureService extends Service {
             int count = 0;
             double average = 0;
 
+            Log.d(TAG, "Measuring for " + interval + " seconds");
+
             // Continuously read audio into buffer for measureTime ms
-            while (SystemClock.uptimeMillis() < measureTime) {
+            while (SystemClock.uptimeMillis() < measureTime && isRecording) {
                 recorder.read(buffer, 0, bufferSize);
-
                 //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-
                 dB = doFFT(buffer); // Perform Fast Fourier Transform
                 if (dB != Double.NEGATIVE_INFINITY) {
                     dbSumTotal += dB;
                     count++;
                 }
-                average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
-                instant = 20 * Math.log10(dB) + 8.25 + calibration;
-//                Log.i(TAG, "instant: " + instant);
-//                Log.i(TAG, "average: " + average);
+
+                // Check if calibration is enabled
+                average = toggle_calibration ?
+                        20 * Math.log10(dbSumTotal / count) + 8.25 + calibration
+                        : 20 * Math.log10(dbSumTotal / count) + 8.25;
+
+                // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
-            recorder.stop();
+
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
-            // TODO export average and time to file
-            // TODO edit log so it shows date and stuff
-
             write(formatLog(average));
+            threshCheck(average);
 
-            long endTime = SystemClock.uptimeMillis();
-            long wait = 10000 - (endTime - startTime);
-            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
+//            long endTime = SystemClock.uptimeMillis();
+//            long wait = 10000 - (endTime - startTime);
+//            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
 
             // Check if recording service has ended or not
             if (isRecording) {
                 // Call the runnable again to measure average of next time block
-                handler.postDelayed(this, wait);
+                handler.post(this);
             } else {
                 // Thread is done recording, release AudioRecord instance
                 Log.d(TAG, "Stopping measuring thread");
@@ -204,7 +210,14 @@ public class MeasureService extends Service {
     /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
 
     private void startRecorder() {
-        recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
+        try {
+            recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
+            recorder.startRecording();
+            isRecording = true;
+        } catch (Exception e) {
+            Log.e(TAG, "AudioRecord not initialized");
+            return;
+        }
         // Handler and HandlerThread setup
         handlerThread = new HandlerThread("measureThread");
         handlerThread.start();
@@ -212,20 +225,25 @@ public class MeasureService extends Service {
         handler.post(measureRunnable);
     }
 
-    public void stopRecorder() {
+
+    /** Releases and cleans AudioRecord, Handler, and HandlerThread instances. **/
+
+    private void stopRecorder() {
         Log.i(TAG, "Stopping the audio stream");
         if (recorder != null) {
             isRecording = false;
             try {
+                recorder.stop();
                 handler.removeCallbacksAndMessages(null);
                 handlerThread.quit();
             } catch (Exception e) {
-                Log.d(TAG,
-                        "handlerThread failed to quit");
+                Log.d(TAG, "handlerThread failed to quit");
             }
         }
     }
 
+
+    /** Function that writes average dB to log file **/
 
     private String formatLog(double average) {
         Date currentTime = Calendar.getInstance().getTime();
@@ -258,8 +276,32 @@ public class MeasureService extends Service {
     }
 
 
-    /** Helper function to do Fast Fourier Transform using JTransforms**/
+    /** Helper function check threshold and display notification if necessary **/
 
+    private void threshCheck(double average) {
+        if (average > Integer.parseInt(preferences.getString("db_threshold", "150"))) {
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+            Notification threshNotification = createThresholdNotification(pendingIntent);
+            notificationManager.notify(0, threshNotification);
+        }
+    }
+
+
+    /** Helper function to create threshold notification **/
+
+    private Notification createThresholdNotification(PendingIntent pendingIntent) {
+        Log.d(TAG, "Creating thresh notification...");
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Measure Service")
+                .setContentText("dB has exceeded threshold")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .build();
+    }
+
+    
     private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
         double avg = 0.0, amplitude = 0.0;
@@ -268,10 +310,8 @@ public class MeasureService extends Service {
         for (int i = 0; i < rawData.length; i++) {
             fft[i] = rawData[i] / ((double) Short.MAX_VALUE);
         }
-
         // FFT
         transform.realForwardFull(fft);
-
         // Calculate the sum of amplitudes
         for (int i = 0; i < fft.length; i += 2) {
             //                              reals                 imaginary
