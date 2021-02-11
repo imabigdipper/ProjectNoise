@@ -179,13 +179,8 @@ public class MeasureService extends Service {
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             // TODO export average and time to file
             // TODO edit log so it shows date and stuff
-            Date currentTime = Calendar.getInstance().getTime();
-            SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
-            SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
-            String time = sdf.format( currentTime);
-            String date = stf.format(currentTime);
-            String log = date + "," + time + "," + average + "\n";
-            write(log);
+
+            write(formatLog(average));
 
             long endTime = SystemClock.uptimeMillis();
             long wait = 10000 - (endTime - startTime);
@@ -232,6 +227,37 @@ public class MeasureService extends Service {
     }
 
 
+    private String formatLog(double average) {
+        Date currentTime = Calendar.getInstance().getTime();
+        SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
+        SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
+        String time = sdf.format( currentTime);
+        String date = stf.format(currentTime);
+        return date + "," + time + "," + average + "\n";
+    }
+
+
+    public void write(String text){
+        FileOutputStream fos = null;
+        try {
+            fos = openFileOutput(FILE_NAME, MODE_APPEND);
+            fos.write(text.getBytes());
+
+            Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if(fos!=null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
     /** Helper function to do Fast Fourier Transform using JTransforms**/
 
     private double doFFT(short[] rawData) {
@@ -254,34 +280,4 @@ public class MeasureService extends Service {
         }
         return avg / rawData.length;
     }
-
-    public void write(String text){
-
-        FileOutputStream fos = null;
-
-        try {
-            fos = openFileOutput(FILE_NAME, MODE_APPEND);
-            fos.write(text.getBytes());
-
-
-            Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        finally {
-            if(fos!=null){
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-    }
-
-
 }
