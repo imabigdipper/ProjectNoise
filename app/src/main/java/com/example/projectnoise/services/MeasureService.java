@@ -17,6 +17,9 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -29,6 +32,7 @@ import org.jtransforms.fft.DoubleFFT_1D;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
@@ -180,9 +184,8 @@ public class MeasureService extends Service {
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
 
-            String log = "Average dB over " + interval + " seconds: " + average;
-            Log.i(TAG, log);
-            write(log);
+            Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
+            write(formatLog(average));
             threshCheck(average);
 
 //            long endTime = SystemClock.uptimeMillis();
@@ -240,42 +243,34 @@ public class MeasureService extends Service {
     }
 
 
-    /** Helper function to do Fast Fourier Transform using JTransforms **/
+    /** Function that writes average dB to log file **/
 
-    private double doFFT(short[] rawData) {
-        double[] fft = new double[2 * rawData.length];
-        double avg = 0.0, amplitude = 0.0;
-
-        // Get a half-filled array of double values for FFT calculation
-        for (int i = 0; i < rawData.length; i++) {
-            fft[i] = rawData[i] / ((double) Short.MAX_VALUE);
-        }
-        // FFT
-        transform.realForwardFull(fft);
-        // Calculate the sum of amplitudes
-        for (int i = 0; i < fft.length; i += 2) {
-            //                              reals                 imaginary
-            amplitude += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2));
-            avg += amplitude * Values.A_WEIGHT_COEFFICIENTS[i / 2];
-        }
-        return avg / rawData.length;
+    private String formatLog(double average) {
+        Date currentTime = Calendar.getInstance().getTime();
+        SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
+        SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
+        String time = sdf.format( currentTime);
+        String date = stf.format(currentTime);
+        return date + "," + time + "," + average + "\n";
     }
 
 
-    /** Function that writes average dB to log file **/
-
-    private void write(String text){
+    public void write(String text){
         FileOutputStream fos = null;
-
         try {
             fos = openFileOutput(FILE_NAME, MODE_APPEND);
             fos.write(text.getBytes());
+
             Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
-        } catch (IOException e) { e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             if(fos!=null){
-                try { fos.close(); }
-                catch (IOException e) { e.printStackTrace(); }
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -304,5 +299,25 @@ public class MeasureService extends Service {
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
+    }
+
+    
+    private double doFFT(short[] rawData) {
+        double[] fft = new double[2 * rawData.length];
+        double avg = 0.0, amplitude = 0.0;
+
+        // Get a half-filled array of double values for FFT calculation
+        for (int i = 0; i < rawData.length; i++) {
+            fft[i] = rawData[i] / ((double) Short.MAX_VALUE);
+        }
+        // FFT
+        transform.realForwardFull(fft);
+        // Calculate the sum of amplitudes
+        for (int i = 0; i < fft.length; i += 2) {
+            //                              reals                 imaginary
+            amplitude += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2));
+            avg += amplitude * Values.A_WEIGHT_COEFFICIENTS[i / 2];
+        }
+        return avg / rawData.length;
     }
 }
