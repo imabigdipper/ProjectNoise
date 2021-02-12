@@ -14,6 +14,7 @@
             app:useSimpleSummaryProvider="true"/>
 
         <EditTextPreference
+            app:enabled="false"
             android:inputType="text"
             app:key="custom_activity"
             app:title="@string/custom_activity_title"
