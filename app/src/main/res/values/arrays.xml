@@ -1,12 +1,18 @@
 <resources>
-    <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
+    <!-- Activity Preference -->
+    <string-array name="activity_entries">
+        <item>Transport</item>
+        <item>Class/Studying</item>
+        <item>Exercising</item>
+        <item>Sleeping</item>
+        <item>Custom (See Below)</item>
     </string-array>
 
-    <string-array name="reply_values">
-        <item>reply</item>
-        <item>reply_all</item>
+    <string-array name="activity_values">
+        <item>transport</item>
+        <item>study</item>
+        <item>exercise</item>
+        <item>sleep</item>
+        <item>custom</item>
     </string-array>
 </resources>

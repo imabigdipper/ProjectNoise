@@ -1,0 +1,28 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/activity_header">
+
+        <ListPreference
+            android:inputType="numberDecimal"
+            app:key="current_activity"
+            app:entries="@array/activity_entries"
+            app:entryValues="@array/activity_values"
+            app:title="@string/activity_title"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true"/>
+
+        <EditTextPreference
+            android:inputType="text"
+            app:key="custom_activity"
+            app:title="@string/custom_activity_title"
+            app:useSimpleSummaryProvider="true"/>
+
+
+
+
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

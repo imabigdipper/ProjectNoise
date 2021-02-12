@@ -2,7 +2,7 @@
     <string name="app_name">ProjectNoise</string>
     <string name="title_home">Home</string>
     <string name="title_settings">Settings</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_activity">Activities</string>
     <string name="button_start_text">Start Service</string>
     <string name="channel_id">PN</string>
     <string name="button_stop_text">Stop Service</string>
@@ -28,4 +28,12 @@
     <string name="toggle_calibration_title">Calibration</string>
     <string name="average_interval_title">Averaging Interval</string>
     <string name="db_threshold_title">dB Notification Threshold</string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="activity_title">Current Activity</string>
+    <string name="activity_header">Current Activity</string>
+    <string name="custom_activity_title">Custom Activity</string>
 </resources>
