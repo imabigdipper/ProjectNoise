@@ -8,54 +8,84 @@
             android:inputType="numberDecimal"
             app:iconSpaceReserved="false"
             app:key="average_interval"
-            app:title="@string/average_interval_title"
-            app:summary="Interval over which the rolling average dB levels will be taken, in seconds" />
+            app:summary="Interval over which the rolling average dB levels will be taken, in seconds"
+            app:title="@string/average_interval_title" />
 
         <EditTextPreference
             android:inputType="numberDecimal"
             app:iconSpaceReserved="false"
             app:key="db_threshold"
-            app:title="@string/db_threshold_title"
-            app:summary="dB threshold at which the app will notify the user" />
+            app:summary="dB threshold at which the app will notify the user"
+            app:title="@string/db_threshold_title" />
 
         <SwitchPreference
             app:iconSpaceReserved="false"
             app:key="toggle_calibration"
-            app:title="@string/toggle_calibration_title"
             app:summary="Toggles calibration of measured dB"
+            app:title="@string/toggle_calibration_title"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
-            app:dependency="toggle_calibration"
             android:inputType="numberDecimal|numberSigned"
+            app:dependency="toggle_calibration"
             app:iconSpaceReserved="true"
             app:key="calibration"
-            app:title="@string/calibration_title"
             app:summary="(+/-) float"
+            app:title="@string/calibration_title"
             app:useSimpleSummaryProvider="true" />
 
         <SwitchPreference
             app:iconSpaceReserved="false"
             app:key="service_scheduling"
-            app:title="@string/service_scheduling_title"
             app:summary="Toggles ability to schedule dB measuring service"
+            app:title="@string/service_scheduling_title"
             app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.TimePickerPreference
             app:dependency="service_scheduling"
             app:iconSpaceReserved="true"
             app:key="measureStartTime"
-            app:title="@string/measureStartTime_title"
             app:summary="The time at which the dB measuring service will automatically start recording"
+            app:title="@string/measureStartTime_title"
             app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.TimePickerPreference
             app:dependency="service_scheduling"
             app:iconSpaceReserved="true"
             app:key="measureEndTime"
-            app:title="@string/measureStopTime_title"
             app:summary="The time at which the dB measuring service will automatically stop recording"
+            app:title="@string/measureStopTime_title"
             app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+    <PreferenceCategory app:title="@string/messages_header">
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/signature_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="reply"
+            app:entries="@array/activity_entries"
+            app:entryValues="@array/activity_values"
+            app:key="reply"
+            app:title="@string/reply_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+    <PreferenceCategory app:title="@string/sync_header">
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_title" />
+
+        <SwitchPreferenceCompat
+            app:dependency="sync"
+            app:key="attachment"
+            app:summaryOff="@string/attachment_summary_off"
+            app:summaryOn="@string/attachment_summary_on"
+            app:title="@string/attachment_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -1,10 +1,12 @@
 package com.example.projectnoise.services;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioFormat;
@@ -36,8 +38,9 @@ import java.util.Date;
 
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
-    private static final String FILE_NAME = "example.txt";
+    private static final String FILE_NAME = "example.csv";
     private SharedPreferences preferences;
+
 
 
     @Override
@@ -247,8 +250,8 @@ public class MeasureService extends Service {
 
     private String formatLog(double average) {
         Date currentTime = Calendar.getInstance().getTime();
-        SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
-        SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
         String time = sdf.format( currentTime);
         String date = stf.format(currentTime);
         return date + "," + time + "," + average + "\n";
@@ -258,6 +261,7 @@ public class MeasureService extends Service {
     public void write(String text){
         FileOutputStream fos = null;
         try {
+            Log.d(TAG, "writing");
             fos = openFileOutput(FILE_NAME, MODE_APPEND);
             fos.write(text.getBytes());
 
