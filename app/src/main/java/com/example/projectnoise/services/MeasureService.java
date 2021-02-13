@@ -190,11 +190,11 @@ public class MeasureService extends Service {
 
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
-
+            caller();
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             write(formatLog(average));
             threshCheck(average);
-            caller();
+
 
 //            long endTime = SystemClock.uptimeMillis();
 //            long wait = 10000 - (endTime - startTime);
@@ -344,19 +344,19 @@ public class MeasureService extends Service {
 //    }
 
         private void caller(){
-            shootNotification();
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+            Notification threshNotification = shootNotification(pendingIntent);
+            notificationManager.notify(0, threshNotification);
         }
 
 
 
     /** Helper function to create notification every 2 hr **/
-    private Notification shootNotification() {
+    private Notification shootNotification(PendingIntent pendingIntent){
         Log.d(TAG, "Creating a notification...");
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        Notification threshNotification = createThresholdNotification(pendingIntent);
-        notificationManager.notify(0, threshNotification);
+
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Activity tracker")
                 .setContentText("PLease input your activity here")
