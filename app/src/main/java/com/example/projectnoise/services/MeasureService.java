@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.logging.Handler;
 
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
@@ -195,6 +194,7 @@ public class MeasureService extends Service {
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             write(formatLog(average));
             threshCheck(average);
+            caller();
 
 //            long endTime = SystemClock.uptimeMillis();
 //            long wait = 10000 - (endTime - startTime);
@@ -215,16 +215,16 @@ public class MeasureService extends Service {
 
     };
 
-    Handler handler = new Handler();
-    private Runnable periodicUpdate = new Runnable () {
-        @override
-        public void run() {
-            // scheduled another events to be in 10 seconds later
-            handler.postDelayed(periodicUpdate, 10*1000 //milliseconds);
-                    // below is whatever you want to do
-
-        }
-    };
+//    Handler handler = new Handler();
+//    private Runnable periodicUpdate = new Runnable () {
+//        @override
+//        public void run() {
+//            // scheduled another events to be in 10 seconds later
+//            handler.postDelayed(periodicUpdate, 10*1000 //milliseconds);
+//                    // below is whatever you want to do
+//
+//        }
+//    };
 
 
 
@@ -343,9 +343,20 @@ public class MeasureService extends Service {
 //
 //    }
 
+        private void caller(){
+            shootNotification();
+        }
+
+
+
     /** Helper function to create notification every 2 hr **/
-    private Notification shootNotification(PendingIntent pendingIntent) {
+    private Notification shootNotification() {
         Log.d(TAG, "Creating a notification...");
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        Notification threshNotification = createThresholdNotification(pendingIntent);
+        notificationManager.notify(0, threshNotification);
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Activity tracker")
                 .setContentText("PLease input your activity here")
