@@ -13,6 +13,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Build;
+import android.os.CountDownTimer;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -190,7 +191,7 @@ public class MeasureService extends Service {
 
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
-            caller();
+            startTimer();
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             write(formatLog(average));
             threshCheck(average);
@@ -215,6 +216,19 @@ public class MeasureService extends Service {
 
     };
 
+    CountDownTimer cTimer = null;
+
+    //start timer function
+    void startTimer() {
+        cTimer = new CountDownTimer(30000, 1000) {
+            public void onTick(long millisUntilFinished) {
+            }
+            public void onFinish() {
+                caller();
+            }
+        };
+        cTimer.start();
+    }
 //    Handler handler = new Handler();
 //    private Runnable periodicUpdate = new Runnable () {
 //        @override
