@@ -221,7 +221,7 @@ public class MeasureService extends Service {
 
     //start timer function
     void startTimer() {
-        cTimer = new CountDownTimer(10000, 1000) {
+        cTimer = new CountDownTimer(30000, 10000) {
             public void onTick(long millisUntilFinished) {
             }
             public void onFinish() {
@@ -364,7 +364,7 @@ public class MeasureService extends Service {
             NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
             Notification threshNotification = shootNotification(pendingIntent);
             notificationManager.notify(0, threshNotification);
-            startTimer();
+
 
         }
 
@@ -373,7 +373,6 @@ public class MeasureService extends Service {
     /** Helper function to create notification every 2 hr **/
     private Notification shootNotification(PendingIntent pendingIntent){
         Log.d(TAG, "Creating a notification...");
-
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Activity tracker")
                 .setContentText("PLease input your activity here")
