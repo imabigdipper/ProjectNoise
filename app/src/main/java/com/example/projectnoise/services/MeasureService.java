@@ -19,6 +19,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -249,19 +250,19 @@ public class MeasureService extends Service {
     /** Function that writes average dB to log file **/
 
     private String formatLog(double average) {
+        String current_activity = activity_check();
         Date currentTime = Calendar.getInstance().getTime();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
         @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
-        String time = sdf.format( currentTime);
+        String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
-        return date + "," + time + "," + average + "\n";
+        return date + "," + time + "," + average + "------" + activity_check()+ "\n";
     }
 
 
     public void write(String text){
         FileOutputStream fos = null;
         try {
-            Log.d(TAG, "writing");
             fos = openFileOutput(FILE_NAME, MODE_APPEND);
             fos.write(text.getBytes());
 
@@ -323,5 +324,14 @@ public class MeasureService extends Service {
             avg += amplitude * Values.A_WEIGHT_COEFFICIENTS[i / 2];
         }
         return avg / rawData.length;
+    }
+    private String activity_check(){
+        String activity = preferences.getString("current_activity","None");
+        if(activity.equals("custom")) {
+            activity =preferences.getString("custom_activity","");
+            return activity;
+        }
+        else
+            return activity;
     }
 }
