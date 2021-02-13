@@ -1,6 +1,7 @@
 package com.example.projectnoise.services;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -130,6 +131,9 @@ public class MeasureService extends Service {
     private long interval;
     private double calibration;
     private boolean toggle_calibration;
+
+    private AlarmManager alarmMgr;
+    private PendingIntent alarmIntent;
 
     // AudioRecord instance configuration
     private static final int SAMPLE_RATE = 44100;
@@ -303,8 +307,23 @@ public class MeasureService extends Service {
                 .build();
     }
 
-
-
+//    private callme() {
+//        alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+//        Intent intent = new Intent(context, AlarmReceiver.class);
+//        alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+//
+//        // Set the alarm to start at 8:30 a.m.
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTimeInMillis(System.currentTimeMillis());
+//        calendar.set(Calendar.HOUR_OF_DAY, 8);
+//        calendar.set(Calendar.MINUTE, 30);
+//
+//        // setRepeating() lets you specify a precise custom interval--in this case,
+//        // 20 minutes.
+//        alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+//                1000 * 60 * 20, alarmIntent);
+//
+//    }
 
     /** Helper function to create notification every 2 hr **/
     private Notification shootNotification(PendingIntent pendingIntent) {
