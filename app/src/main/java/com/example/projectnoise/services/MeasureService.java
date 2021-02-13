@@ -6,7 +6,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioFormat;
@@ -18,9 +17,6 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -34,6 +30,8 @@ import org.jtransforms.fft.DoubleFFT_1D;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class MeasureService extends Service {
@@ -304,6 +302,21 @@ public class MeasureService extends Service {
                 .setContentIntent(pendingIntent)
                 .build();
     }
+
+
+
+
+    /** Helper function to create notification every 2 hr **/
+    private Notification shootNotification(PendingIntent pendingIntent) {
+        Log.d(TAG, "Creating a notification...");
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Activity tracker")
+                .setContentText("PLease input your activity here")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .build();
+    }
+
 
     
     private double doFFT(short[] rawData) {
