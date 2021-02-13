@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Handler;
 
 public class MeasureService extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
@@ -147,9 +148,11 @@ public class MeasureService extends Service {
 
     private AudioRecord recorder;
     private HandlerThread handlerThread;
+
     private android.os.Handler handler;
 
     private boolean isRecording = false;
+
 
 
     /** Runnable executed inside the HandlerThread. Measures sound data over the given interval then calculates average dB. Re-invokes itself until service is killed. Heavily based on:
@@ -209,7 +212,20 @@ public class MeasureService extends Service {
                 Log.d(TAG, "Successfully released AudioRecord instance");
             }
         }
+
     };
+
+    Handler handler = new Handler();
+    private Runnable periodicUpdate = new Runnable () {
+        @override
+        public void run() {
+            // scheduled another events to be in 10 seconds later
+            handler.postDelayed(periodicUpdate, 10*1000 //milliseconds);
+                    // below is whatever you want to do
+
+        }
+    };
+
 
 
     /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
@@ -306,6 +322,8 @@ public class MeasureService extends Service {
                 .setContentIntent(pendingIntent)
                 .build();
     }
+
+
 
 //    private callme() {
 //        alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
