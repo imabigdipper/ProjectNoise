@@ -20,7 +20,9 @@ public class ActivitiesFragment extends PreferenceFragmentCompat {
         ListPreference currentActivity = findPreference("current_activity");
         Preference customActivity = findPreference("custom_activity");
 
-        customActivity.setEnabled(currentActivity.getValue().equals("custom"));
+        if (currentActivity != null && currentActivity.getValue() != null)
+            customActivity.setEnabled(currentActivity.getValue().equals("custom"));
+
         currentActivity.setOnPreferenceChangeListener((preference, newValue) -> {
             final String val = newValue.toString();
             int index = currentActivity.findIndexOfValue(val);
@@ -29,9 +31,4 @@ public class ActivitiesFragment extends PreferenceFragmentCompat {
         });
 
     }
-
-//    @Override
-//    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-//
-//    }
 }
