@@ -339,7 +339,7 @@ public class MeasureService extends Service {
     }
 
 
-
+// using alaram manager API 
 //    private callme() {
 //        alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 //        Intent intent = new Intent(context, AlarmReceiver.class);
