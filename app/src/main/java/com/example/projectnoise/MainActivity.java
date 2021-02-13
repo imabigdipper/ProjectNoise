@@ -1,8 +1,6 @@
 package com.example.projectnoise;
 
 import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,9 +17,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "Test Service";
+    private static String TAG = "Test Service";
     private static final int RECORD_REQUEST_CODE = 99;
-    private static final int FM_NOTIFICATION_ID = 9;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,118 +28,15 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_preferences, R.id.navigation_notifications)
+                R.id.navigation_home, R.id.navigation_preferences, R.id.navigation_activities)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-        // Create notification channel for our app, and ask for mic permission on startup.
-        createNotificationChannel();
-        //addNotification();
+        // Ask for mic permission on startup.
         setupPermissions();
-
     }
-//    private void notifyUser(String _message) {
-//        NotificationCompat.Builder mBuilder =
-//                new NotificationCompat.Builder(this)
-//                        .setSmallIcon(R.mipmap.ic_launcher)
-//                        .setContentTitle("Baby App")
-//                        .setContentText(_message);
-//        // Creates an explicit intent for an Activity in your app
-//        Intent resultIntent = new Intent(this, MainActivity.class);
-//
-//        // The stack builder object will contain an artificial back stack for the
-//        // started Activity.
-//        // This ensures that navigating backward from the Activity Leads out of
-//        // your application to the Home screen.
-//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-//        // Adds the back stack for the Intent (but not the Intent itself)
-//        stackBuilder.addParentStack(MainActivity.class);
-//        // Adds the Intent that starts the Activity to the top of the stack
-//        stackBuilder.addNextIntent(resultIntent);
-//        PendingIntent resultPendingIntent =
-//                stackBuilder.getPendingIntent(
-//                        0,
-//                        PendingIntent.FLAG_UPDATE_CURRENT
-//                );
-//        mBuilder.setContentIntent(resultPendingIntent);
-//        NotificationManager mNotificationManager =
-//                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//        // mId allows you to update the notification later on.
-//        // mId = 0
-//        mNotificationManager.notify(0, mBuilder.build());
-//    }
-
-
-    private void createNotificationChannel() {
-        CharSequence name = "PN Channel";
-        String description = "PN notifications";
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel channel = new NotificationChannel(getString(R.string.channel_id), name, importance);
-        channel.setDescription(description);
-
-        NotificationManager notificationManager = this.getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-
-    }
-
-//    private void addNotification() {
-//
-//        NotificationCompat.Builder builder =
-//                new NotificationCompat.Builder(this)
-//                        .setSmallIcon(R.mipmap.ic_launcher_round)
-//                        .setContentTitle("Notifications Example")
-//                        .setContentText("This is a test notification");
-//        Log.i(TAG, "I am in Main activity");
-//
-//        Intent notificationIntent = new Intent(this, MainActivity.class);
-//        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-//                PendingIntent.FLAG_UPDATE_CURRENT);
-//        builder.setContentIntent(contentIntent);
-//
-//        // Add as notification
-//        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//        manager.notify(FM_NOTIFICATION_ID, builder.build());
-//    }
-
-    //   Creates and displays a notification
-//    private void addNotification() {
-//        // Builds your notification
-//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "hello")
-//                .setSmallIcon(R.mipmap.ic_launcher_round)
-//                .setContentTitle("Project Noise")
-//                .setContentText("Db level exceed!");
-//
-//        // Creates the intent needed to show the notification
-//        Intent notificationIntent = new Intent(this, MainActivity.class);
-//        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        builder.setContentIntent(contentIntent);
-//
-//        // Add as notification
-//        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//        manager.notify(0, builder.build());
-//    }
-//    private void addNotification() {
-//        NotificationCompat.Builder builder =
-//                new NotificationCompat.Builder(this)
-//                        .setSmallIcon(R.mipmap.ic_launcher_round)
-//                        .setContentTitle("Notifications Example")
-//                        .setContentText("This is a test notification");
-//
-//        Intent notificationIntent = new Intent(this, MainActivity.class);
-//        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-//                PendingIntent.FLAG_UPDATE_CURRENT);
-//        builder.setContentIntent(contentIntent);
-//
-//        // Add as notification
-//        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//        manager.notify(0, builder.build());
-//    }
-
-
-
-
 
 
     /**
