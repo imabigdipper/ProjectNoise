@@ -191,8 +191,9 @@ public class MeasureService extends Service {
 
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
-            startTimer();
+
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
+            startTimer();
             write(formatLog(average));
             threshCheck(average);
 
@@ -220,7 +221,7 @@ public class MeasureService extends Service {
 
     //start timer function
     void startTimer() {
-        cTimer = new CountDownTimer(30000, 1000) {
+        cTimer = new CountDownTimer(10000, 1000) {
             public void onTick(long millisUntilFinished) {
             }
             public void onFinish() {
@@ -363,6 +364,8 @@ public class MeasureService extends Service {
             NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
             Notification threshNotification = shootNotification(pendingIntent);
             notificationManager.notify(0, threshNotification);
+            startTimer();
+
         }
 
 
