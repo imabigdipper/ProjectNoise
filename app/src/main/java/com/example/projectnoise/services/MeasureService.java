@@ -256,7 +256,7 @@ public class MeasureService extends Service {
         @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
         String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
-        return date + "," + time + "," + average + "------" + activity_check()+ "\n";
+        return date + "," + time + "," + average + "," + activity_check()+ "\n";
     }
 
 
