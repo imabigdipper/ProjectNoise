@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -116,7 +115,7 @@ public class MeasureService<var> extends Service {
     /** Initialize variables from preferences to minimize getPreference calls **/
 
     private void initPrefs() {
-        interval = Long.parseLong(preferences.getString("average_interval", "60"));
+        interval = Long.parseLong(preferences.getString("average_interval", "90"));
         calibration = Double.parseDouble(preferences.getString("calibration", "0"));
         toggle_calibration = preferences.getBoolean("toggle_calibration", false);
         toggle_threshold_notifications = preferences.getBoolean("toggle_threshold_notifications", false);
@@ -201,7 +200,7 @@ public class MeasureService<var> extends Service {
             // Check preferences to see if notification types are enabled
             if (toggle_threshold_notifications)
                 threshCheck(average);
-                activityNotificationCheck();
+                //activityNotificationCheck();
 //            if (toggle_activity_notifications)
 //                // TODO Mihir: Activity Notification Check
 //                 activityNotificationCheck();
@@ -240,8 +239,16 @@ public class MeasureService<var> extends Service {
 
         int x1 = getsecond(timeS1);
         int x2 = getsecond(timeS1);
-        Log.d(TAG, "sec 1" + x1);
-        Log.d(TAG, "sec 2" + x2);
+        Log.d(TAG, "second 1 will be: " + x1);
+        Log.d(TAG, "second 2 will be: " + x2);
+        if (x2>x1)
+        {
+            Log.d(TAG, "successfully1");
+        }
+        if ((x2-7200)==x1)
+        {
+            Log.d(TAG, "successfully2");
+        }
 
         }
 
@@ -269,21 +276,46 @@ public class MeasureService<var> extends Service {
 
     /** Helper function to get the seconds out of hr and min **/
     private int getsecond(String cur) {
-        int[] result = Arrays.stream(cur.split(":")).mapToInt(Integer::parseInt).toArray();
-        int l = result.length;
-        int ts = 0;
-        for (int i = 0; i < l; i++)
-        {
-            if ((i == 0) || (i == 1))
-            {
-                ts = ts + result[i]* (3600);
-            }
-            else
-            {
-                ts = ts + result[i]* (60);
-            }
-        }
-        return ts;
+
+//        String str = cur.replaceAll(":$", " ");
+//        Log.d(TAG, String.valueOf(str));
+
+          String strNew = cur.replace(".", "");
+          Log.d(TAG, "new string will be: " + String.valueOf(strNew));
+
+          String s1 = strNew.substring(0, strNew.length()/2);
+          Log.d(TAG, "new s1: "+ s1);
+          String s2 = strNew.substring(0, strNew.length()/2);
+          Log.d(TAG, "new s2: "+ s2);
+          Log.d(TAG, String.valueOf(s2));
+          Integer x1 = Integer.valueOf(s1);
+          Log.d(TAG, "new x1: "+ x1);
+          Integer x2 = Integer.valueOf(s2);
+          Log.d(TAG, "new x2: "+ x1);
+
+//        int[] result = Arrays.stream(cur.split(".")).mapToInt(Integer::parseInt).toArray();
+//        Log.d(TAG, "final array is: " + Arrays.toString(result));
+//        int l = result.length;
+//        Log.d(TAG, "length of array: " + l);
+//        int[] array = new int[4];
+//        Log.d(TAG, "length of array2: " + array.length);
+
+
+//        int ts = 0;
+//        for (int i = 0; i < l; i++)
+//        {
+//            if ((i == 0) || (i == 1))
+//            {
+//                ts = ts + result[i]*3600;
+//                Log.d(TAG, "ts: " + ts);
+//            }
+//            else
+//            {
+//                ts = ts + result[i]*60;
+//                Log.d(TAG, "ts: " + ts);
+//            }
+//        }
+        return 0;
 
     }
 
