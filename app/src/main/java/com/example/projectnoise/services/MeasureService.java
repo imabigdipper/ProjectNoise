@@ -20,6 +20,10 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -148,11 +152,9 @@ public class MeasureService extends Service {
 
     private AudioRecord recorder;
     private HandlerThread handlerThread;
-
     private android.os.Handler handler;
 
     private boolean isRecording = false;
-
 
 
     /** Runnable executed inside the HandlerThread. Measures sound data over the given interval then calculates average dB. Re-invokes itself until service is killed. Heavily based on:
@@ -197,7 +199,6 @@ public class MeasureService extends Service {
             write(formatLog(average));
             threshCheck(average);
 
-
 //            long endTime = SystemClock.uptimeMillis();
 //            long wait = 10000 - (endTime - startTime);
 //            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
@@ -214,7 +215,6 @@ public class MeasureService extends Service {
                 Log.d(TAG, "Successfully released AudioRecord instance");
             }
         }
-
     };
 
     CountDownTimer cTimer = null;
@@ -282,19 +282,19 @@ public class MeasureService extends Service {
     /** Function that writes average dB to log file **/
 
     private String formatLog(double average) {
+        String current_activity = activity_check();
         Date currentTime = Calendar.getInstance().getTime();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
         @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
-        String time = sdf.format( currentTime);
+        String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
-        return date + "," + time + "," + average + "\n";
+        return date + "," + time + "," + average + "," + activity_check()+ "\n";
     }
 
 
     public void write(String text){
         FileOutputStream fos = null;
         try {
-            Log.d(TAG, "writing");
             fos = openFileOutput(FILE_NAME, MODE_APPEND);
             fos.write(text.getBytes());
 
@@ -339,7 +339,7 @@ public class MeasureService extends Service {
     }
 
 
-// using alaram manager API 
+// using alaram manager API
 //    private callme() {
 //        alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 //        Intent intent = new Intent(context, AlarmReceiver.class);
@@ -400,5 +400,15 @@ public class MeasureService extends Service {
             avg += amplitude * Values.A_WEIGHT_COEFFICIENTS[i / 2];
         }
         return avg / rawData.length;
+    }
+
+    private String activity_check(){
+        String activity = preferences.getString("current_activity","None");
+        if(activity.equals("custom")) {
+            activity =preferences.getString("custom_activity","");
+            return activity;
+        }
+        else
+            return activity;
     }
 }
