@@ -20,9 +20,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
@@ -34,9 +31,13 @@ import org.jtransforms.fft.DoubleFFT_1D;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 
-public class MeasureService extends Service {
+public class MeasureService<var> extends Service {
     public static final String CHANNEL_ID = "MeasureServiceChannel";
     private static final String FILE_NAME = "example.csv";
     private SharedPreferences preferences;
@@ -194,13 +195,15 @@ public class MeasureService extends Service {
 
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             writeToLog(formatLog(average));
+            activityNotificationCheck();
 
             // Check preferences to see if notification types are enabled
             if (toggle_threshold_notifications)
                 threshCheck(average);
-            if (toggle_activity_notifications)
-                // TODO Mihir: Activity Notification Check
-                // activityNotificationCheck();
+                activityNotificationCheck();
+//            if (toggle_activity_notifications)
+//                // TODO Mihir: Activity Notification Check
+//                 activityNotificationCheck();
 
 
             // Check if recording service has ended or not
@@ -220,6 +223,20 @@ public class MeasureService extends Service {
 
     void activityNotificationCheck() {
         // call createActivityNotification();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
+
+        int sum;
+        LocalTime s = LocalTime.now();
+        String timeString = s.format(formatter);
+        Log.d(TAG, String.valueOf(s));
+        Log.d(TAG, String.valueOf(s.getClass()));
+        int i = Integer.parseInt(String.valueOf(s));
+        //Log.d(TAG, String.valueOf("i.getClass()"));
+        int newt = Integer.parseInt("02:00:00");
+        sum = i + newt;
+        String news = String.valueOf(sum);
+        Log.d(TAG, news);
+
     }
 
 
