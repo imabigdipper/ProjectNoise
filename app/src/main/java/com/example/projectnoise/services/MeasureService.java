@@ -228,14 +228,27 @@ public class MeasureService<var> extends Service {
         int sum;
         LocalTime s = LocalTime.now();
         String timeString = s.format(formatter);
-        Log.d(TAG, String.valueOf(s));
-        Log.d(TAG, String.valueOf(s.getClass()));
-        int i = Integer.parseInt(String.valueOf(s));
-        //Log.d(TAG, String.valueOf("i.getClass()"));
-        int newt = Integer.parseInt("02:00:00");
-        sum = i + newt;
-        String news = String.valueOf(sum);
-        Log.d(TAG, news);
+        // print the current time in HH:mm format
+        Log.d(TAG, String.valueOf(timeString));
+        Log.d(TAG, String.valueOf(timeString.getClass()));
+
+        String[] parts = timeString.split(":");
+        String part1 = parts[0]; // hh
+        String part2 = parts[1]; // mm
+
+        Log.d(TAG, String.valueOf(part1));
+        Log.d(TAG, String.valueOf(part2));
+
+        int i = Integer.parseInt(part1);
+        int j = Integer.parseInt(part2);
+
+        Log.d(TAG, String.valueOf(i));
+        Log.d(TAG, String.valueOf(j));
+//
+//        int newt = Integer.parseInt("02:00:00");
+//        sum = i + newt;
+//        String news = String.valueOf(sum);
+//        Log.d(TAG, news);
 
     }
 
