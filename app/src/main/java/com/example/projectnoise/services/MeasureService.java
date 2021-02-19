@@ -13,14 +13,12 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Build;
-import android.os.CountDownTimer;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -36,8 +34,6 @@ import org.jtransforms.fft.DoubleFFT_1D;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 public class MeasureService extends Service {
@@ -124,8 +120,6 @@ public class MeasureService extends Service {
     }
 
 
-
-
     /**
      * This chunk of the service is all about the dB measuring process
      **/
@@ -195,13 +189,12 @@ public class MeasureService extends Service {
             }
 
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
-            startTimer();
             write(formatLog(average));
             threshCheck(average);
 
-//            long endTime = SystemClock.uptimeMillis();
-//            long wait = 10000 - (endTime - startTime);
-//            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
+            // TODO Mihir: Activity Notification Check
+            // ActivityNotificationCheck();
+
 
             // Check if recording service has ended or not
             if (isRecording) {
@@ -217,30 +210,10 @@ public class MeasureService extends Service {
         }
     };
 
-    CountDownTimer cTimer = null;
 
-    //start timer function
-    void startTimer() {
-        cTimer = new CountDownTimer(30000, 10000) {
-            public void onTick(long millisUntilFinished) {
-            }
-            public void onFinish() {
-                caller();
-            }
-        };
-        cTimer.start();
+    void ActivityNotificationCheck() {
+        // call createActivityNotification();
     }
-//    Handler handler = new Handler();
-//    private Runnable periodicUpdate = new Runnable () {
-//        @override
-//        public void run() {
-//            // scheduled another events to be in 10 seconds later
-//            handler.postDelayed(periodicUpdate, 10*1000 //milliseconds);
-//                    // below is whatever you want to do
-//
-//        }
-//    };
-
 
 
     /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
@@ -297,19 +270,25 @@ public class MeasureService extends Service {
         try {
             fos = openFileOutput(FILE_NAME, MODE_APPEND);
             fos.write(text.getBytes());
-
             Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+
+        } catch (IOException e) { e.printStackTrace(); }
+
+        finally {
             if(fos!=null){
                 try {
                     fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                } catch (IOException e) { e.printStackTrace(); }
             }
         }
+    }
+
+    private String activity_check() {
+        String activity = preferences.getString("current_activity","None");
+        if(activity.equals("custom")) {
+            activity = preferences.getString("custom_activity", "");
+        }
+        return activity;
     }
 
 
@@ -317,72 +296,44 @@ public class MeasureService extends Service {
 
     private void threshCheck(double average) {
         if (average > Integer.parseInt(preferences.getString("db_threshold", "150"))) {
-            Intent notificationIntent = new Intent(this, MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-            Notification threshNotification = createThresholdNotification(pendingIntent);
-            notificationManager.notify(0, threshNotification);
+            createThresholdNotification();
         }
     }
 
 
     /** Helper function to create threshold notification **/
 
-    private Notification createThresholdNotification(PendingIntent pendingIntent) {
-        Log.d(TAG, "Creating thresh notification...");
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
+    private void createThresholdNotification() {
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        Notification threshNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Measure Service")
-                .setContentText("dB has exceeded threshold")
+                .setContentText("dB has exceeded threshold, please update current activity")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
+        threshNotification.flags = Notification.FLAG_AUTO_CANCEL;
+        notificationManager.notify(0, threshNotification);
     }
 
 
-// using alaram manager API
-//    private callme() {
-//        alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-//        Intent intent = new Intent(context, AlarmReceiver.class);
-//        alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-//
-//        // Set the alarm to start at 8:30 a.m.
-//        Calendar calendar = Calendar.getInstance();
-//        calendar.setTimeInMillis(System.currentTimeMillis());
-//        calendar.set(Calendar.HOUR_OF_DAY, 8);
-//        calendar.set(Calendar.MINUTE, 30);
-//
-//        // setRepeating() lets you specify a precise custom interval--in this case,
-//        // 20 minutes.
-//        alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
-//                1000 * 60 * 20, alarmIntent);
-//
-//    }
-
-        private void caller(){
-            Intent notificationIntent = new Intent(this, MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-            Notification threshNotification = shootNotification(pendingIntent);
-            notificationManager.notify(0, threshNotification);
-
-
-        }
-
-
-
-    /** Helper function to create notification every 2 hr **/
-    private Notification shootNotification(PendingIntent pendingIntent){
-        Log.d(TAG, "Creating a notification...");
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
+    /** Helper function to create activity notification **/
+    private void createActivityNotification(){
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        Notification activityNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Activity tracker")
-                .setContentText("PLease input your activity here")
+                .setContentText("Please tap here to update your current activity")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
+        activityNotification.flags = Notification.FLAG_AUTO_CANCEL;
+        notificationManager.notify(0, activityNotification);
     }
 
 
-    
     private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
         double avg = 0.0, amplitude = 0.0;
@@ -400,15 +351,5 @@ public class MeasureService extends Service {
             avg += amplitude * Values.A_WEIGHT_COEFFICIENTS[i / 2];
         }
         return avg / rawData.length;
-    }
-
-    private String activity_check(){
-        String activity = preferences.getString("current_activity","None");
-        if(activity.equals("custom")) {
-            activity =preferences.getString("custom_activity","");
-            return activity;
-        }
-        else
-            return activity;
     }
 }

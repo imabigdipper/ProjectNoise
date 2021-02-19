@@ -15,4 +15,44 @@
         <item>sleep</item>
         <item>custom</item>
     </string-array>
+
+    <string-array name="notification_interval_entries">
+        <item>.5h</item>
+        <item>1h</item>
+        <item>1.5h</item>
+        <item>2h</item>
+        <item>2.5h</item>
+        <item>3h</item>
+        <item>3.5h</item>
+        <item>4h</item>
+        <item>4.5h</item>
+        <item>5h</item>
+        <item>5.5h</item>
+        <item>6h</item>
+        <item>6.5h</item>
+        <item>7h</item>
+        <item>7.5h</item>
+        <item>8h</item>
+    </string-array>
+
+    <string-array name="notification_interval_values">
+        <item>.5</item>
+        <item>1</item>
+        <item>1.5</item>
+        <item>2</item>
+        <item>2.5</item>
+        <item>3</item>
+        <item>3.5</item>
+        <item>4</item>
+        <item>4.5</item>
+        <item>5</item>
+        <item>5.5</item>
+        <item>6</item>
+        <item>6.5</item>
+        <item>7</item>
+        <item>7.5</item>
+        <item>8</item>
+    </string-array>
+
+
 </resources>

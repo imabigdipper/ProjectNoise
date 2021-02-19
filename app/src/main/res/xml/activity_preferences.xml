@@ -5,7 +5,6 @@
         app:title="@string/activity_header">
 
         <ListPreference
-            android:inputType="numberDecimal"
             app:key="current_activity"
             app:entries="@array/activity_entries"
             app:entryValues="@array/activity_values"
