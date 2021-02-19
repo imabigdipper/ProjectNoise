@@ -115,7 +115,7 @@ public class MeasureService<var> extends Service {
     /** Initialize variables from preferences to minimize getPreference calls **/
 
     private void initPrefs() {
-        interval = Long.parseLong(preferences.getString("average_interval", "90"));
+        interval = Long.parseLong(preferences.getString("average_interval", "30"));
         calibration = Double.parseDouble(preferences.getString("calibration", "0"));
         toggle_calibration = preferences.getBoolean("toggle_calibration", false);
         toggle_threshold_notifications = preferences.getBoolean("toggle_threshold_notifications", false);
@@ -238,84 +238,39 @@ public class MeasureService<var> extends Service {
         Log.d(TAG, String.valueOf(timeS2.getClass()));
 
         int x1 = getsecond(timeS1);
-        int x2 = getsecond(timeS1);
+        int x2 = getsecond(timeS2);
         Log.d(TAG, "second 1 will be: " + x1);
         Log.d(TAG, "second 2 will be: " + x2);
-        if (x2>x1)
-        {
-            Log.d(TAG, "successfully1");
-        }
         if ((x2-7200)==x1)
         {
-            Log.d(TAG, "successfully2");
+            Log.d(TAG, "successfully");
         }
 
         }
 
 
-//        String[] parts = timeString.split(":");
-//        Log.d(TAG, "array is" + Arrays.toString(parts));
-//        String part1 = parts[0]; // hh
-//        String part2 = parts[1]; // mm
-//
-//        Log.d(TAG, String.valueOf(part1));
-//        Log.d(TAG, String.valueOf(part2));
-
-        //int i = Integer.parseInt(part1);
-       //int j = Integer.parseInt(part2);
-
-        //Log.d(TAG, String.valueOf(i));
-        //Log.d(TAG, String.valueOf(j));
-//
-//        int newt = Integer.parseInt("02:00:00");
-//        sum = i + newt;
-//        String news = String.valueOf(sum);
-//        Log.d(TAG, news);
 
 
 
     /** Helper function to get the seconds out of hr and min **/
     private int getsecond(String cur) {
 
-//        String str = cur.replaceAll(":$", " ");
-//        Log.d(TAG, String.valueOf(str));
-
           String strNew = cur.replace(".", "");
-          Log.d(TAG, "new string will be: " + String.valueOf(strNew));
+          //Log.d(TAG, "new string will be: " + String.valueOf(strNew));
 
           String s1 = strNew.substring(0, strNew.length()/2);
-          Log.d(TAG, "new s1: "+ s1);
-          String s2 = strNew.substring(0, strNew.length()/2);
-          Log.d(TAG, "new s2: "+ s2);
-          Log.d(TAG, String.valueOf(s2));
+          //Log.d(TAG, "new s1: "+ s1);
+          String s2 = strNew.substring(2, strNew.length());
+          //Log.d(TAG, "new s2: "+ s2);
           Integer x1 = Integer.valueOf(s1);
-          Log.d(TAG, "new x1: "+ x1);
+          //Log.d(TAG, "new x1: "+ x1);
           Integer x2 = Integer.valueOf(s2);
-          Log.d(TAG, "new x2: "+ x1);
+          //Log.d(TAG, "new x2: "+ x2);
 
-//        int[] result = Arrays.stream(cur.split(".")).mapToInt(Integer::parseInt).toArray();
-//        Log.d(TAG, "final array is: " + Arrays.toString(result));
-//        int l = result.length;
-//        Log.d(TAG, "length of array: " + l);
-//        int[] array = new int[4];
-//        Log.d(TAG, "length of array2: " + array.length);
+          int sum = 0;
+          sum = (x1*3600) + (x2*60);
 
-
-//        int ts = 0;
-//        for (int i = 0; i < l; i++)
-//        {
-//            if ((i == 0) || (i == 1))
-//            {
-//                ts = ts + result[i]*3600;
-//                Log.d(TAG, "ts: " + ts);
-//            }
-//            else
-//            {
-//                ts = ts + result[i]*60;
-//                Log.d(TAG, "ts: " + ts);
-//            }
-//        }
-        return 0;
+        return sum;
 
     }
 
