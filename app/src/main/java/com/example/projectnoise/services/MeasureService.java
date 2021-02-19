@@ -155,6 +155,12 @@ public class MeasureService<var> extends Service {
 
     private boolean isRecording = false;
 
+    /** import current time and time+2h **/
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
+    LocalTime s = LocalTime.now();
+    LocalTime ns = s.plusHours(2);
+    public String timeS1 = s.format(formatter);
+    public String timeS2 = ns.format(formatter);
 
     /** Runnable executed inside the HandlerThread. Measures sound data over the given interval then calculates average dB. Re-invokes itself until service is killed. Heavily based on:
      * https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
@@ -195,7 +201,7 @@ public class MeasureService<var> extends Service {
 
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             writeToLog(formatLog(average));
-            activityNotificationCheck();
+            activityNotificationCheck(timeS1, timeS2);
 
             // Check preferences to see if notification types are enabled
             if (toggle_threshold_notifications)
@@ -221,29 +227,30 @@ public class MeasureService<var> extends Service {
     };
 
 
-    void activityNotificationCheck() {
+    void activityNotificationCheck(String s1, String s2) {
         // call createActivityNotification();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
+//        LocalTime s = LocalTime.now();
+//        LocalTime ns = s.plusHours(2);
+//        String timeS1 = s.format(formatter);
+//        String timeS2 = ns.format(formatter);
+//        // print the current time in HH:mm format
+//        Log.d(TAG, String.valueOf(timeS1));
+//
+//
+//        Log.d(TAG, String.valueOf(timeS2));
 
-        int sum;
-        LocalTime s = LocalTime.now();
-        LocalTime ns = s.plusHours(2);
-        String timeS1 = s.format(formatter);
-        String timeS2 = ns.format(formatter);
-        // print the current time in HH:mm format
-        Log.d(TAG, String.valueOf(timeS1));
-        Log.d(TAG, String.valueOf(timeS1.getClass()));
 
-        Log.d(TAG, String.valueOf(timeS2));
-        Log.d(TAG, String.valueOf(timeS2.getClass()));
-
-        int x1 = getsecond(timeS1);
-        int x2 = getsecond(timeS2);
+        int x1 = getsecond(s1);
+        int x2 = getsecond(s2);
         Log.d(TAG, "second 1 will be: " + x1);
         Log.d(TAG, "second 2 will be: " + x2);
         if ((x2-7200)==x1)
         {
             Log.d(TAG, "successfully");
+            // push a activity notification
+            createActivityNotification();
+
         }
 
         }
