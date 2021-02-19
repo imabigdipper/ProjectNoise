@@ -1,12 +1,12 @@
 package com.example.projectnoise.services;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioFormat;
@@ -19,7 +19,6 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -121,8 +120,6 @@ public class MeasureService extends Service {
     }
 
 
-
-
     /**
      * This chunk of the service is all about the dB measuring process
      **/
@@ -133,6 +130,9 @@ public class MeasureService extends Service {
     private long interval;
     private double calibration;
     private boolean toggle_calibration;
+
+    private AlarmManager alarmMgr;
+    private PendingIntent alarmIntent;
 
     // AudioRecord instance configuration
     private static final int SAMPLE_RATE = 44100;
@@ -192,9 +192,9 @@ public class MeasureService extends Service {
             write(formatLog(average));
             threshCheck(average);
 
-//            long endTime = SystemClock.uptimeMillis();
-//            long wait = 10000 - (endTime - startTime);
-//            Log.d(TAG, "Waiting for " + wait/(long) 1000 + " seconds");
+            // TODO Mihir: Activity Notification Check
+            // ActivityNotificationCheck();
+
 
             // Check if recording service has ended or not
             if (isRecording) {
@@ -209,6 +209,11 @@ public class MeasureService extends Service {
             }
         }
     };
+
+
+    void ActivityNotificationCheck() {
+        // call createActivityNotification();
+    }
 
 
     /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
@@ -265,19 +270,25 @@ public class MeasureService extends Service {
         try {
             fos = openFileOutput(FILE_NAME, MODE_APPEND);
             fos.write(text.getBytes());
-
             Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+
+        } catch (IOException e) { e.printStackTrace(); }
+
+        finally {
             if(fos!=null){
                 try {
                     fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                } catch (IOException e) { e.printStackTrace(); }
             }
         }
+    }
+
+    private String activity_check() {
+        String activity = preferences.getString("current_activity","None");
+        if(activity.equals("custom")) {
+            activity = preferences.getString("custom_activity", "");
+        }
+        return activity;
     }
 
 
@@ -285,28 +296,44 @@ public class MeasureService extends Service {
 
     private void threshCheck(double average) {
         if (average > Integer.parseInt(preferences.getString("db_threshold", "150"))) {
-            Intent notificationIntent = new Intent(this, MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-            Notification threshNotification = createThresholdNotification(pendingIntent);
-            notificationManager.notify(0, threshNotification);
+            createThresholdNotification();
         }
     }
 
 
     /** Helper function to create threshold notification **/
 
-    private Notification createThresholdNotification(PendingIntent pendingIntent) {
-        Log.d(TAG, "Creating thresh notification...");
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
+    private void createThresholdNotification() {
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        Notification threshNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Measure Service")
-                .setContentText("dB has exceeded threshold")
+                .setContentText("dB has exceeded threshold, please update current activity")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
+        threshNotification.flags = Notification.FLAG_AUTO_CANCEL;
+        notificationManager.notify(0, threshNotification);
     }
 
-    
+
+    /** Helper function to create activity notification **/
+    private void createActivityNotification(){
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        Notification activityNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Activity tracker")
+                .setContentText("Please tap here to update your current activity")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .build();
+        activityNotification.flags = Notification.FLAG_AUTO_CANCEL;
+        notificationManager.notify(0, activityNotification);
+    }
+
+
     private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
         double avg = 0.0, amplitude = 0.0;
@@ -324,14 +351,5 @@ public class MeasureService extends Service {
             avg += amplitude * Values.A_WEIGHT_COEFFICIENTS[i / 2];
         }
         return avg / rawData.length;
-    }
-    private String activity_check(){
-        String activity = preferences.getString("current_activity","None");
-        if(activity.equals("custom")) {
-            activity =preferences.getString("custom_activity","");
-            return activity;
-        }
-        else
-            return activity;
     }
 }
