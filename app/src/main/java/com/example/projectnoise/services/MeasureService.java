@@ -227,23 +227,29 @@ public class MeasureService<var> extends Service {
 
         int sum;
         LocalTime s = LocalTime.now();
-        String timeString = s.format(formatter);
+        LocalTime ns = s.plusHours(2);
+        String timeS1 = s.format(formatter);
+        String timeS2 = ns.format(formatter);
         // print the current time in HH:mm format
-        Log.d(TAG, String.valueOf(timeString));
-        Log.d(TAG, String.valueOf(timeString.getClass()));
+        Log.d(TAG, String.valueOf(timeS1));
+        Log.d(TAG, String.valueOf(timeS1.getClass()));
 
-        String[] parts = timeString.split(":");
-        String part1 = parts[0]; // hh
-        String part2 = parts[1]; // mm
+        Log.d(TAG, String.valueOf(timeS2));
+        Log.d(TAG, String.valueOf(timeS2.getClass()));
 
-        Log.d(TAG, String.valueOf(part1));
-        Log.d(TAG, String.valueOf(part2));
+//        String[] parts = timeString.split(":");
+//        Log.d(TAG, "array is" + Arrays.toString(parts));
+//        String part1 = parts[0]; // hh
+//        String part2 = parts[1]; // mm
+//
+//        Log.d(TAG, String.valueOf(part1));
+//        Log.d(TAG, String.valueOf(part2));
 
-        int i = Integer.parseInt(part1);
-        int j = Integer.parseInt(part2);
+        //int i = Integer.parseInt(part1);
+       //int j = Integer.parseInt(part2);
 
-        Log.d(TAG, String.valueOf(i));
-        Log.d(TAG, String.valueOf(j));
+        //Log.d(TAG, String.valueOf(i));
+        //Log.d(TAG, String.valueOf(j));
 //
 //        int newt = Integer.parseInt("02:00:00");
 //        sum = i + newt;
