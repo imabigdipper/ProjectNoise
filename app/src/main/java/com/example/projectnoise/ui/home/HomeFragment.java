@@ -19,7 +19,7 @@ import com.example.projectnoise.services.MeasureService;
 
 public class HomeFragment extends Fragment {
 
-    private static String TAG = "Home Fragment";
+    private static final String TAG = "Home Fragment";
 
     private HomeViewModel homeViewModel;
     private double dBvalue;
