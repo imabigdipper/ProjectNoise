@@ -37,4 +37,5 @@
     <string name="activity_header">Current Activity</string>
     <string name="custom_activity_title">Custom Activity</string>
     <string name="notification_title">Activity Notification Interval</string>
+    <string name="threshold_intervals_title">Threshold Intervals</string>
 </resources>
