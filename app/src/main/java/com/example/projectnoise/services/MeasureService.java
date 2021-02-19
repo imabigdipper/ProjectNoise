@@ -240,6 +240,8 @@ public class MeasureService<var> extends Service {
 
         int x1 = getsecond(timeS1);
         int x2 = getsecond(timeS1);
+        Log.d(TAG, "sec 1" + x1);
+        Log.d(TAG, "sec 2" + x2);
 
         }
 
