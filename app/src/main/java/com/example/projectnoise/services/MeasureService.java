@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -237,6 +238,12 @@ public class MeasureService<var> extends Service {
         Log.d(TAG, String.valueOf(timeS2));
         Log.d(TAG, String.valueOf(timeS2.getClass()));
 
+        int x1 = getsecond(timeS1);
+        int x2 = getsecond(timeS1);
+
+        }
+
+
 //        String[] parts = timeString.split(":");
 //        Log.d(TAG, "array is" + Arrays.toString(parts));
 //        String part1 = parts[0]; // hh
@@ -256,8 +263,27 @@ public class MeasureService<var> extends Service {
 //        String news = String.valueOf(sum);
 //        Log.d(TAG, news);
 
-    }
 
+
+    /** Helper function to get the seconds out of hr and min **/
+    private int getsecond(String cur) {
+        int[] result = Arrays.stream(cur.split(":")).mapToInt(Integer::parseInt).toArray();
+        int l = result.length;
+        int ts = 0;
+        for (int i = 0; i < l; i++)
+        {
+            if ((i == 0) || (i == 1))
+            {
+                ts = ts + result[i]* (3600);
+            }
+            else
+            {
+                ts = ts + result[i]* (60);
+            }
+        }
+        return ts;
+
+    }
 
     /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
 
