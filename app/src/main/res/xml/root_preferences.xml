@@ -11,13 +11,6 @@
             app:summary="Interval over which the rolling average dB levels will be taken, in seconds"
             app:title="@string/average_interval_title" />
 
-        <EditTextPreference
-            android:inputType="numberDecimal"
-            app:iconSpaceReserved="false"
-            app:key="db_threshold"
-            app:summary="dB threshold at which the app will notify the user"
-            app:title="@string/db_threshold_title" />
-
         <SwitchPreference
             app:iconSpaceReserved="false"
             app:key="toggle_calibration"
@@ -34,39 +27,72 @@
             app:title="@string/calibration_title"
             app:useSimpleSummaryProvider="true" />
 
-        <SwitchPreference
-            app:iconSpaceReserved="false"
-            app:key="service_scheduling"
-            app:summary="Toggles ability to schedule dB measuring service"
-            app:title="@string/service_scheduling_title"
-            app:useSimpleSummaryProvider="true" />
+<!--        <SwitchPreference-->
+<!--            app:iconSpaceReserved="false"-->
+<!--            app:key="service_scheduling"-->
+<!--            app:summary="Toggles ability to schedule dB measuring service"-->
+<!--            app:title="@string/service_scheduling_title"-->
+<!--            app:useSimpleSummaryProvider="true" />-->
 
-        <com.takisoft.preferencex.TimePickerPreference
-            app:dependency="service_scheduling"
-            app:iconSpaceReserved="true"
-            app:key="measureStartTime"
-            app:summary="The time at which the dB measuring service will automatically start recording"
-            app:title="@string/measureStartTime_title"
-            app:useSimpleSummaryProvider="true" />
+<!--        <com.takisoft.preferencex.TimePickerPreference-->
+<!--            app:dependency="service_scheduling"-->
+<!--            app:iconSpaceReserved="true"-->
+<!--            app:key="measureStartTime"-->
+<!--            app:summary="The time at which the dB measuring service will automatically start recording"-->
+<!--            app:title="@string/measureStartTime_title"-->
+<!--            app:useSimpleSummaryProvider="true" />-->
 
-        <com.takisoft.preferencex.TimePickerPreference
-            app:dependency="service_scheduling"
-            app:iconSpaceReserved="true"
-            app:key="measureEndTime"
-            app:summary="The time at which the dB measuring service will automatically stop recording"
-            app:title="@string/measureStopTime_title"
-            app:useSimpleSummaryProvider="true" />
+<!--        <com.takisoft.preferencex.TimePickerPreference-->
+<!--            app:dependency="service_scheduling"-->
+<!--            app:iconSpaceReserved="true"-->
+<!--            app:key="measureEndTime"-->
+<!--            app:summary="The time at which the dB measuring service will automatically stop recording"-->
+<!--            app:title="@string/measureStopTime_title"-->
+<!--            app:useSimpleSummaryProvider="true" />-->
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/notifications_header">
+    <PreferenceCategory app:title="@string/notifications_header"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="toggle_activity_notifications"
+            app:summary="Toggle periodic activity notifications"
+            app:title="Activity Notifications"
+            app:useSimpleSummaryProvider="true" />
+
         <ListPreference
+            app:dependency="toggle_activity_notifications"
             android:inputType="numberDecimal"
             app:entries="@array/notification_interval_entries"
             app:entryValues="@array/notification_interval_values"
-            app:iconSpaceReserved="false"
+            app:iconSpaceReserved="true"
             app:key="notification_interval"
             app:summary="Interval at which notifications will be sent reminding the user to update their activity."
             app:title="@string/notification_title" />
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="toggle_threshold_notifications"
+            app:summary="Toggle prolonged threshold exposure notifications"
+            app:title="Threshold Notifications"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:dependency="toggle_threshold_notifications"
+            android:inputType="numberDecimal"
+            app:iconSpaceReserved="true"
+            app:key="db_threshold"
+            app:summary="dB threshold at which the app will mark an interval"
+            app:title="@string/db_threshold_title" />
+
+        <EditTextPreference
+            app:dependency="toggle_threshold_notifications"
+            android:inputType="numberDecimal"
+            app:iconSpaceReserved="true"
+            app:key="threshold_intervals"
+            app:summary="How many recording intervals above the threshold pass until the user is notified"
+            app:title="@string/threshold_intervals_title" />
 
     </PreferenceCategory>
 

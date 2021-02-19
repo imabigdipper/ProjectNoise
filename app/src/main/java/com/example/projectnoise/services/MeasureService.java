@@ -117,6 +117,8 @@ public class MeasureService extends Service {
         interval = Long.parseLong(preferences.getString("average_interval", "60"));
         calibration = Double.parseDouble(preferences.getString("calibration", "0"));
         toggle_calibration = preferences.getBoolean("toggle_calibration", false);
+        toggle_threshold_notifications = preferences.getBoolean("toggle_threshold_notifications", false);
+        toggle_activity_notifications = preferences.getBoolean("toggle_activity_notifications", false);
     }
 
 
@@ -130,6 +132,8 @@ public class MeasureService extends Service {
     private long interval;
     private double calibration;
     private boolean toggle_calibration;
+    private boolean toggle_threshold_notifications;
+    private boolean toggle_activity_notifications;
 
     private AlarmManager alarmMgr;
     private PendingIntent alarmIntent;
@@ -189,11 +193,14 @@ public class MeasureService extends Service {
             }
 
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
-            write(formatLog(average));
-            threshCheck(average);
+            writeToLog(formatLog(average));
 
-            // TODO Mihir: Activity Notification Check
-            // ActivityNotificationCheck();
+            // Check preferences to see if notification types are enabled
+            if (toggle_threshold_notifications)
+                threshCheck(average);
+            if (toggle_activity_notifications)
+                // TODO Mihir: Activity Notification Check
+                // activityNotificationCheck();
 
 
             // Check if recording service has ended or not
@@ -211,7 +218,7 @@ public class MeasureService extends Service {
     };
 
 
-    void ActivityNotificationCheck() {
+    void activityNotificationCheck() {
         // call createActivityNotification();
     }
 
@@ -265,7 +272,7 @@ public class MeasureService extends Service {
     }
 
 
-    public void write(String text){
+    public void writeToLog(String text){
         FileOutputStream fos = null;
         try {
             fos = openFileOutput(FILE_NAME, MODE_APPEND);
@@ -294,9 +301,18 @@ public class MeasureService extends Service {
 
     /** Helper function check threshold and display notification if necessary **/
 
+    private int threshCounter = 0;
+
     private void threshCheck(double average) {
-        if (average > Integer.parseInt(preferences.getString("db_threshold", "150"))) {
+        if (average > Integer.parseInt(preferences.getString("db_threshold", "150")))
+            threshCounter++;
+
+        else
+            threshCounter = 0;
+
+        if (threshCounter >= Integer.parseInt(preferences.getString("threshold_intervals","30"))) {
             createThresholdNotification();
+            threshCounter = 0;
         }
     }
 
