@@ -115,7 +115,7 @@ public class MeasureService<var> extends Service {
     /** Initialize variables from preferences to minimize getPreference calls **/
 
     private void initPrefs() {
-        interval = Long.parseLong(preferences.getString("average_interval", "30"));
+        interval = Long.parseLong(preferences.getString("average_interval", "60"));
         calibration = Double.parseDouble(preferences.getString("calibration", "0"));
         toggle_calibration = preferences.getBoolean("toggle_calibration", false);
         toggle_threshold_notifications = preferences.getBoolean("toggle_threshold_notifications", false);
@@ -233,11 +233,12 @@ public class MeasureService<var> extends Service {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
         LocalTime s = LocalTime.now();
         String timeS1 = s.format(formatter);
+        Log.d(TAG," ");
         Log.d(TAG, "current time in hh.mm: " + timeS1);
         Log.d(TAG, "time to notify hh.mm: " + time_notification);
         int current_time = getsecond(timeS1);
         int time_2h = getsecond(time_notification);
-        Log.d(TAG," ");
+
         //Log.d(TAG, "current time: " + current_time);
         //Log.d(TAG, "time + 2h: " + time_2h);
         //if ((time_2h-7200) == current_time)
