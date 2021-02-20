@@ -7,7 +7,7 @@
         <EditTextPreference
             android:inputType="numberDecimal"
             app:iconSpaceReserved="false"
-            app:key="average_interval"
+            app:key="average_interval_len"
             app:summary="Interval over which the rolling average dB levels will be taken, in seconds"
             app:title="@string/average_interval_title" />
 
@@ -67,7 +67,7 @@
             app:entries="@array/notification_interval_entries"
             app:entryValues="@array/notification_interval_values"
             app:iconSpaceReserved="true"
-            app:key="notification_interval"
+            app:key="notification_interval_len"
             app:summary="Interval at which notifications will be sent reminding the user to update their activity."
             app:title="@string/notification_title" />
 
@@ -90,7 +90,7 @@
             app:dependency="toggle_threshold_notifications"
             android:inputType="numberDecimal"
             app:iconSpaceReserved="true"
-            app:key="threshold_intervals"
+            app:key="threshold_interval_num"
             app:summary="How many recording intervals above the threshold pass until the user is notified"
             app:title="@string/threshold_intervals_title" />
 
