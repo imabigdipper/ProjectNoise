@@ -234,12 +234,16 @@ public class MeasureService<var> extends Service {
         int x2 = getsecond(s2);
         Log.d(TAG, "second 1 will be: " + x1);
         Log.d(TAG, "second 2 will be: " + x2);
-        if (x1>x2)
+        if ((x2-7200) == x2)
+        // if (x1 > x2)
         {
             Log.d(TAG, "successfully");
             // push a activity notification
             createActivityNotification();
 
+        }
+        else{
+            Log.d(TAG, "unsuccessfully");
         }
 
         }
