@@ -81,7 +81,16 @@ public class MeasureService extends Service {
 
         // Helper function to set up thread for measuring sound data
         startRecorder();
-        Log.d(TAG, "Starting measureService thread with calibration: " + Integer.valueOf(preferences.getString("calibration", "0")));
+        Log.d(TAG, "Starting measureService thread with \n" +
+                "Calibration: " + toggleCalibration + "\n" +
+                "Calibration Constant: " + calibration + " dB \n" +
+                "Averaging Interval Length: " + averageIntervalLen + " seconds \n" +
+                "Activity Notifications: " + toggleActivityNotifications + "\n" +
+                "Activity Notification Interval: " + notificationIntervalLen + " hours\n" +
+                "Threshold Notifications: " + toggleThresholdNotifications + "\n" +
+                "Threshold Intervals: " + thresholdIntervalNum + "\n" +
+                "Threshold: " + dbThreshold +  " dB \n"
+                );
 
         return  START_STICKY;
     }
