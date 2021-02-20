@@ -209,7 +209,7 @@ public class MeasureService<var> extends Service {
                 threshCheck(average);
                 //activityNotificationCheck();
 //            if (toggle_activity_notifications)
-//                // TODO Mihir: Activity Notification Check
+//
 //                 activityNotificationCheck();
 
 
@@ -227,21 +227,20 @@ public class MeasureService<var> extends Service {
         }
     };
 
-
+    /** this function will check if the current time
+     * has pass the 2h notification threshold, and if it has
+     * then push a notification to ask user to input his/her activity
+     */
     void activityNotificationCheck() {
         // call createActivityNotification();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
         LocalTime s = LocalTime.now();
         String timeS1 = s.format(formatter);
         Log.d(TAG," ");
-        Log.d(TAG, "current time in hh.mm: " + timeS1);
-        Log.d(TAG, "time to notify hh.mm: " + time_notification);
+        Log.d(TAG, "current time: " + timeS1);
+        Log.d(TAG, "time to notify: " + time_notification);
         int current_time = getsecond(timeS1);
         int time_2h = getsecond(time_notification);
-
-        //Log.d(TAG, "current time: " + current_time);
-        //Log.d(TAG, "time + 2h: " + time_2h);
-        //if ((time_2h-7200) == current_time)
         if (current_time > time_2h)
         {
             Log.d(TAG, "successfully");
