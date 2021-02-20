@@ -229,23 +229,12 @@ public class MeasureService<var> extends Service {
 
     void activityNotificationCheck(String s1, String s2) {
         // call createActivityNotification();
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
-//        LocalTime s = LocalTime.now();
-//        LocalTime ns = s.plusHours(2);
-//        String timeS1 = s.format(formatter);
-//        String timeS2 = ns.format(formatter);
-//        // print the current time in HH:mm format
-//        Log.d(TAG, String.valueOf(timeS1));
-//
-//
-//        Log.d(TAG, String.valueOf(timeS2));
-
 
         int x1 = getsecond(s1);
         int x2 = getsecond(s2);
         Log.d(TAG, "second 1 will be: " + x1);
         Log.d(TAG, "second 2 will be: " + x2);
-        if ((x2-7200)==x1)
+        if (x1>x2)
         {
             Log.d(TAG, "successfully");
             // push a activity notification
@@ -254,8 +243,6 @@ public class MeasureService<var> extends Service {
         }
 
         }
-
-
 
 
 
