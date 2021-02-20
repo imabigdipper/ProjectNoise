@@ -159,8 +159,9 @@ public class MeasureService<var> extends Service {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
     LocalTime s = LocalTime.now();
     LocalTime ns = s.plusHours(2);
-    public String timeS1 = s.format(formatter);
-    public String timeS2 = ns.format(formatter);
+    public String time_notification = ns.format(formatter);
+
+
 
     /** Runnable executed inside the HandlerThread. Measures sound data over the given interval then calculates average dB. Re-invokes itself until service is killed. Heavily based on:
      * https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
@@ -201,7 +202,7 @@ public class MeasureService<var> extends Service {
 
             Log.i(TAG, "Average dB over " + interval + " seconds: " + average);
             writeToLog(formatLog(average));
-            activityNotificationCheck(timeS1, timeS2);
+            activityNotificationCheck();
 
             // Check preferences to see if notification types are enabled
             if (toggle_threshold_notifications)
@@ -227,20 +228,24 @@ public class MeasureService<var> extends Service {
     };
 
 
-    void activityNotificationCheck(String s1, String s2) {
+    void activityNotificationCheck() {
         // call createActivityNotification();
-
-        int x1 = getsecond(s1);
-        int x2 = getsecond(s2);
-        Log.d(TAG, "second 1 will be: " + x1);
-        Log.d(TAG, "second 2 will be: " + x2);
-        if ((x2-7200) == x1)
-        // if (x1 > x2)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH.mm");
+        LocalTime s = LocalTime.now();
+        String timeS1 = s.format(formatter);
+        Log.d(TAG, "current time in hh.mm: " + timeS1);
+        Log.d(TAG, "time to notify hh.mm: " + time_notification);
+        int current_time = getsecond(timeS1);
+        int time_2h = getsecond(time_notification);
+        Log.d(TAG," ");
+        //Log.d(TAG, "current time: " + current_time);
+        //Log.d(TAG, "time + 2h: " + time_2h);
+        //if ((time_2h-7200) == current_time)
+        if (current_time > time_2h)
         {
             Log.d(TAG, "successfully");
             // push a activity notification
             createActivityNotification();
-
         }
         else{
             Log.d(TAG, "unsuccessfully");
@@ -253,12 +258,12 @@ public class MeasureService<var> extends Service {
     /** Helper function to get the seconds out of hr and min **/
     private int getsecond(String cur) {
 
-          String strNew = cur.replace(".", "");
+          String strNew = cur.replace(".", ""); // 16.05 will be converted to 1605
           //Log.d(TAG, "new string will be: " + String.valueOf(strNew));
 
-          String s1 = strNew.substring(0, strNew.length()/2);
+          String s1 = strNew.substring(0, strNew.length()/2); // 16 (hr)
           //Log.d(TAG, "new s1: "+ s1);
-          String s2 = strNew.substring(2, strNew.length());
+          String s2 = strNew.substring(2, strNew.length());  // 05 (min)
           //Log.d(TAG, "new s2: "+ s2);
           Integer x1 = Integer.valueOf(s1);
           //Log.d(TAG, "new x1: "+ x1);
