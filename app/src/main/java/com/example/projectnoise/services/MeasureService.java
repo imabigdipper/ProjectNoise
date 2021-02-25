@@ -1,7 +1,6 @@
 package com.example.projectnoise.services;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -33,13 +32,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
 public class MeasureService extends Service {
-    public static final String CHANNEL_ID = "MeasureServiceChannel";
+    public static final String PERSISTENT_CHANNEL_ID = "PersistentServiceChannel";
+    public static final String ALERT_CHANNEL_ID = "AlertServiceChannel";
+
     private static final String FILE_NAME = "example.csv";
     private SharedPreferences preferences;
 
@@ -68,7 +67,8 @@ public class MeasureService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Creates notification channel & notification in preparation to launch service in foreground
-        createNotificationChannel();
+        createPersistentNotificationChannel();
+        createAlertNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
@@ -107,7 +107,7 @@ public class MeasureService extends Service {
     /** Helper function to create foreground notification **/
 
     private Notification createForegroundNotification(PendingIntent pendingIntent) {
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
+        return new NotificationCompat.Builder(this, PERSISTENT_CHANNEL_ID)
                 .setOngoing(true)
                 .setContentTitle("Measure Service")
                 .setContentText("Measuring dB")
@@ -119,11 +119,24 @@ public class MeasureService extends Service {
 
     /** Helper function to create notification channel **/
 
-    private void createNotificationChannel() {
+    private void createPersistentNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Measure Service Channel",
+                    PERSISTENT_CHANNEL_ID,
+                    "Persistent Service Notification Channel",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
+    }
+
+    private void createAlertNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    ALERT_CHANNEL_ID,
+                    "Alert Channel",
                     NotificationManager.IMPORTANCE_HIGH
             );
 
@@ -136,15 +149,23 @@ public class MeasureService extends Service {
     /** Initialize variables from preferences to minimize getPreference calls **/
 
     private void initPrefs() {
-        averageIntervalLen = Long.parseLong(preferences.getString("average_interval_len", "30"));
-        calibration = Double.parseDouble(preferences.getString("calibration", "0"));
-        dbThreshold = Double.parseDouble(preferences.getString("db_threshold", "100"));
-        thresholdIntervalNum = Integer.parseInt(preferences.getString("threshold_interval_num","30"));
-        notificationIntervalLen = Double.parseDouble(preferences.getString("notification_interval_len", "2"));
-
         toggleCalibration = preferences.getBoolean("toggle_calibration", false);
         toggleThresholdNotifications = preferences.getBoolean("toggle_threshold_notifications", false);
         toggleActivityNotifications = preferences.getBoolean("toggle_activity_notifications", false);
+        averageIntervalLen = Long.parseLong(preferences.getString("average_interval_len", "30"));
+
+        if (toggleCalibration) {
+            calibration = Double.parseDouble(preferences.getString("calibration", "0"));
+        }
+
+        if (toggleThresholdNotifications) {
+            dbThreshold = Double.parseDouble(preferences.getString("db_threshold", "100"));
+            thresholdIntervalNum = Integer.parseInt(preferences.getString("threshold_interval_num", "30"));
+        }
+
+        if (toggleActivityNotifications) {
+            notificationIntervalLen = Double.parseDouble(preferences.getString("notification_interval_len", "2"));
+        }
     }
 
 
@@ -189,6 +210,10 @@ public class MeasureService extends Service {
      **/
 
     private static final String TAG = "Measure Service";
+
+    // Notification IDS
+    int THRESH_ID = 2;
+    int ACTIVITY_ID = 3;
 
     // Preference variables
     private long averageIntervalLen;
@@ -376,14 +401,14 @@ public class MeasureService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        Notification threshNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Measure Service")
-                .setContentText("dB has exceeded threshold, please update current activity")
+        Notification threshNotification = new NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
+                .setContentTitle("Activity Tracker")
+                .setContentText("You are experiencing prolonged exposure to a loud environment, please update current activity")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
         threshNotification.flags = Notification.FLAG_AUTO_CANCEL;
-        notificationManager.notify(0, threshNotification);
+        notificationManager.notify(THRESH_ID, threshNotification);
     }
 
 
@@ -393,14 +418,14 @@ public class MeasureService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        Notification activityNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        Notification activityNotification = new NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
                 .setContentTitle("Activity tracker")
                 .setContentText("Please tap here to update your current activity")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
         activityNotification.flags = Notification.FLAG_AUTO_CANCEL;
-        notificationManager.notify(0, activityNotification);
+        notificationManager.notify(ACTIVITY_ID, activityNotification);
     }
 
 

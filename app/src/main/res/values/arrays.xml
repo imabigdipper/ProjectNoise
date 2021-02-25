@@ -17,6 +17,7 @@
     </string-array>
 
     <string-array name="notification_interval_entries">
+        <item>15s (demo)</item>
         <item>.5h</item>
         <item>1h</item>
         <item>1.5h</item>
@@ -36,7 +37,8 @@
     </string-array>
 
     <string-array name="notification_interval_values">
-        <item>.5</item>
+        <item>0.004</item>
+        <item>0.5</item>
         <item>1</item>
         <item>1.5</item>
         <item>2</item>
@@ -53,6 +55,4 @@
         <item>7.5</item>
         <item>8</item>
     </string-array>
-
-
 </resources>
