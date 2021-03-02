@@ -35,7 +35,7 @@
     <string name="signature_title">Your signature</string>
     <string name="activity_title">Current Activity</string>
     <string name="activity_header">Current Activity</string>
-    <string name="custom_activity_title">Custom Activity</string>
+    <string name="custom_activity_title">Custom Activity 1</string>
     <string name="notification_title">Activity Notification Interval</string>
     <string name="threshold_intervals_title">Threshold Intervals</string>
 </resources>

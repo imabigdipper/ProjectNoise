@@ -13,10 +13,22 @@
             app:useSimpleSummaryProvider="true"/>
 
         <EditTextPreference
-            app:enabled="false"
             android:inputType="text"
-            app:key="custom_activity"
+            app:key="custom_activity_1"
             app:title="@string/custom_activity_title"
+            app:useSimpleSummaryProvider="true"/>
+
+        <EditTextPreference
+            android:inputType="text"
+            app:key="custom_activity_2"
+            app:title="Custom Activity 2"
+            app:useSimpleSummaryProvider="true"/>
+
+
+        <EditTextPreference
+            android:inputType="text"
+            app:key="custom_activity_3"
+            app:title="Custom Activity 3"
             app:useSimpleSummaryProvider="true"/>
 
 

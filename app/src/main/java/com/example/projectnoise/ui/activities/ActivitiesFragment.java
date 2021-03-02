@@ -17,18 +17,18 @@ public class ActivitiesFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.activity_preferences, rootKey);
-        ListPreference currentActivity = findPreference("current_activity");
-        Preference customActivity = findPreference("custom_activity");
-
-        if (currentActivity != null && currentActivity.getValue() != null)
-            customActivity.setEnabled(currentActivity.getValue().equals("custom"));
-
-        currentActivity.setOnPreferenceChangeListener((preference, newValue) -> {
-            final String val = newValue.toString();
-            int index = currentActivity.findIndexOfValue(val);
-            customActivity.setEnabled(val.equals("custom"));
-            return true;
-        });
+//        ListPreference currentActivity = findPreference("current_activity");
+//        Preference customActivity = findPreference("custom_activity");
+//
+//        if (currentActivity != null && currentActivity.getValue() != null)
+//            customActivity.setEnabled(currentActivity.getValue().equals("custom"));
+//
+//        currentActivity.setOnPreferenceChangeListener((preference, newValue) -> {
+//            final String val = newValue.toString();
+//            int index = currentActivity.findIndexOfValue(val);
+//            customActivity.setEnabled(val.equals("custom"));
+//            return true;
+//        });
 
     }
 }

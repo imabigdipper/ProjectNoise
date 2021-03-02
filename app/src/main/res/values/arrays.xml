@@ -5,7 +5,9 @@
         <item>Class/Studying</item>
         <item>Exercising</item>
         <item>Sleeping</item>
-        <item>Custom (See Below)</item>
+        <item>Custom 1</item>
+        <item>Custom 2</item>
+        <item>Custom 3</item>
     </string-array>
 
     <string-array name="activity_values">
@@ -13,7 +15,9 @@
         <item>study</item>
         <item>exercise</item>
         <item>sleep</item>
-        <item>custom</item>
+        <item>custom1</item>
+        <item>custom2</item>
+        <item>custom3</item>
     </string-array>
 
     <string-array name="notification_interval_entries">
