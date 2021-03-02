@@ -10,17 +10,20 @@
             app:entryValues="@array/activity_values"
             app:title="@string/activity_title"
             app:iconSpaceReserved="false"
+            app:defaultValue="sleep"
             app:useSimpleSummaryProvider="true"/>
 
         <EditTextPreference
             android:inputType="text"
             app:key="custom_activity_1"
+            app:defaultValue="N/A"
             app:title="@string/custom_activity_title"
             app:useSimpleSummaryProvider="true"/>
 
         <EditTextPreference
             android:inputType="text"
             app:key="custom_activity_2"
+            app:defaultValue="N/A"
             app:title="Custom Activity 2"
             app:useSimpleSummaryProvider="true"/>
 
@@ -28,6 +31,7 @@
         <EditTextPreference
             android:inputType="text"
             app:key="custom_activity_3"
+            app:defaultValue="N/A"
             app:title="Custom Activity 3"
             app:useSimpleSummaryProvider="true"/>
 
