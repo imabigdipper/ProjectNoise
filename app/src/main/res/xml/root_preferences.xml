@@ -1,13 +1,33 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="Service Control">
+
+        <Preference
+            android:title="Start Service"
+            android:key="service_start"
+            android:summary="Starts measuring service"
+            />
+
+        <Preference
+            android:title="Stop Service"
+            android:key="service_stop"
+            android:summary="Stops measuring service"
+            />
+</PreferenceCategory>
+
+
     <PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/measuring_header">
 
-        <EditTextPreference
-            android:inputType="numberDecimal"
+        <com.takisoft.preferencex.EditTextPreference
+            android:inputType="number"
             app:iconSpaceReserved="false"
             app:key="average_interval_len"
+            android:defaultValue="60"
             app:summary="Interval over which the rolling average dB levels will be taken, in seconds"
             app:title="@string/average_interval_title" />
 
@@ -18,11 +38,12 @@
             app:title="@string/toggle_calibration_title"
             app:useSimpleSummaryProvider="true" />
 
-        <EditTextPreference
+        <com.takisoft.preferencex.EditTextPreference
             android:inputType="numberDecimal|numberSigned"
             app:dependency="toggle_calibration"
             app:iconSpaceReserved="true"
             app:key="calibration"
+            android:defaultValue="0"
             app:summary="(+/-) float"
             app:title="@string/calibration_title"
             app:useSimpleSummaryProvider="true" />
@@ -68,7 +89,8 @@
             app:entryValues="@array/notification_interval_values"
             app:iconSpaceReserved="true"
             app:key="notification_interval_len"
-            app:summary="Interval at which notifications will be sent reminding the user to update their activity."
+            android:defaultValue="2"
+            app:summary="Interval at which notifications will be sent, reminding the user to update their activity."
             app:title="@string/notification_title" />
 
         <SwitchPreference
@@ -78,19 +100,21 @@
             app:title="Threshold Notifications"
             app:useSimpleSummaryProvider="true" />
 
-        <EditTextPreference
+        <com.takisoft.preferencex.EditTextPreference
             app:dependency="toggle_threshold_notifications"
             android:inputType="numberDecimal"
             app:iconSpaceReserved="true"
             app:key="db_threshold"
+            android:defaultValue="80"
             app:summary="dB threshold at which the app will mark an interval"
             app:title="@string/db_threshold_title" />
 
-        <EditTextPreference
+        <com.takisoft.preferencex.EditTextPreference
             app:dependency="toggle_threshold_notifications"
-            android:inputType="numberDecimal"
+            android:inputType="number"
             app:iconSpaceReserved="true"
             app:key="threshold_interval_num"
+            android:defaultValue="30"
             app:summary="How many recording intervals above the threshold pass until the user is notified"
             app:title="@string/threshold_intervals_title" />
 

@@ -345,9 +345,13 @@ public class MeasureService extends Service {
 
     private String getCurActivity() {
         String activity = preferences.getString("current_activity","None");
-        if(activity.equals("custom")) {
-            activity = preferences.getString("custom_activity", "");
-        }
+        if(activity.equals("custom1"))
+            activity = preferences.getString("custom_activity_1", "N/A");
+        if(activity.equals("custom2"))
+            activity = preferences.getString("custom_activity_2", "N/A");
+        if(activity.equals("custom3"))
+            activity = preferences.getString("custom_activity_3", "N/A");
+
         return activity;
     }
 
@@ -382,6 +386,7 @@ public class MeasureService extends Service {
             Log.d(TAG, "curTime: " + sdf.format(System.currentTimeMillis()));
             Log.d(TAG, "notifTime: " + nextActivityNotifTime);
 
+            assert curTime != null;
             if (curTime.after(notifTime)) {
                 Log.d(TAG, "Time to send an activity notification");
                 createActivityNotification();
