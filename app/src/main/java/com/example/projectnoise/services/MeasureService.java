@@ -12,7 +12,9 @@ import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.MediaScannerConnection;
 import android.os.Build;
+import android.os.Environment;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -29,6 +31,7 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
@@ -324,20 +327,23 @@ public class MeasureService extends Service {
 
 
     public void writeToLog(String text){
-        FileOutputStream fos = null;
+        String state = Environment.getExternalStorageState();
+        if (!Environment.MEDIA_MOUNTED.equals(state))
+            Log.d(TAG, "External storage not mounted");
+
+        File file = new File(getExternalFilesDir(null), "log.csv");
+
         try {
-            fos = openFileOutput(FILE_NAME, MODE_APPEND);
+            boolean success = file.createNewFile();
+            FileOutputStream fos = new FileOutputStream(file, true);
             fos.write(text.getBytes());
-            Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
+            MediaScannerConnection.scanFile(this, new String[] {file.toString()}, null, null);
+            fos.flush();
+            fos.close();
 
-        } catch (IOException e) { e.printStackTrace(); }
-
-        finally {
-            if(fos!=null){
-                try {
-                    fos.close();
-                } catch (IOException e) { e.printStackTrace(); }
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG, "FILE SAVING FAILED");
         }
     }
 
