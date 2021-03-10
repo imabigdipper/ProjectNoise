@@ -410,7 +410,7 @@ public class MeasureService extends Service {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
         Notification threshNotification = new NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
                 .setContentTitle("Activity Tracker")
-                .setContentText("You are experiencing prolonged exposure to a loud environment, please update current activity")
+                .setContentText("What are you up to? Tap to update your current activity.")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setColor(color)
                 .setContentIntent(pendingIntent)
@@ -428,7 +428,7 @@ public class MeasureService extends Service {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
         Notification activityNotification = new NotificationCompat.Builder(this, ALERT_CHANNEL_ID)
                 .setContentTitle("Activity tracker")
-                .setContentText("Please tap here to update your current activity")
+                .setContentText("What are you up to? Tap to update your current activity.")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
