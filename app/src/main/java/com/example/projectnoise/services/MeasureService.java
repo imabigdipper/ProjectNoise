@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -403,6 +404,7 @@ public class MeasureService extends Service {
     /** Helper function to create threshold notification */
 
     private void createThresholdNotification() {
+        int color = Color.argb(255, 228, 14, 18);
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
@@ -410,6 +412,7 @@ public class MeasureService extends Service {
                 .setContentTitle("Activity Tracker")
                 .setContentText("You are experiencing prolonged exposure to a loud environment, please update current activity")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setColor(color)
                 .setContentIntent(pendingIntent)
                 .build();
         threshNotification.flags = Notification.FLAG_AUTO_CANCEL;
