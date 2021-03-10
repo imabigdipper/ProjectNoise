@@ -331,6 +331,10 @@ public class MeasureService extends Service {
         if (!Environment.MEDIA_MOUNTED.equals(state))
             Log.d(TAG, "External storage not mounted");
 
+        /**
+         * Saves to Android/data/com.example.projectnoise/files when viewed over USB
+         * full path is /storage/emulated/0/Android/data/com.example.projectnoise/files/log.csv
+         **/
         File file = new File(getExternalFilesDir(null), "log.csv");
 
         try {
