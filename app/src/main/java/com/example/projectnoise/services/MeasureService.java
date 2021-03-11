@@ -19,6 +19,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -291,14 +292,16 @@ public class MeasureService extends Service {
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
 
-            Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
-            writeToLog(formatLog(average));
+
 
             // Check preferences to see if notification types are enabled
             if (toggleThresholdNotifications)
                 threshCheck(average);
             if (toggleActivityNotifications && !getCurActivity().equals("sleep"))
                  activityNotificationCheck();
+
+            Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
+            writeToLog(formatLog(average));
 
 
             // Check if recording service has ended or not
@@ -319,13 +322,43 @@ public class MeasureService extends Service {
     /** Functions that format and log date/time, average dB, and activity to log file */
 
     private String formatLog(double average) {
+
+        int threshPresent = 0;
+        int activityPresent = 0;
+        int notif = notificationCheck();
+        if (notif == THRESH_ID)
+            threshPresent = 1;
+        else if (notif == ACTIVITY_ID)
+            activityPresent = 1;
+        else if (notif == THRESH_ID + ACTIVITY_ID) {
+            threshPresent = 1;
+            activityPresent = 1;
+        }
+
+        notificationCheck();
         String current_activity = getCurActivity();
         Date currentTime = Calendar.getInstance().getTime();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
         @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
         String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
-        return date + "," + time + "," + average + "," + current_activity+ "\n";
+        Log.d(TAG, "LOGGING: " + date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n");
+        return date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n";
+    }
+
+
+    private int notificationCheck() {
+        int notif = 0;
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        StatusBarNotification[] notifications =
+                notificationManager.getActiveNotifications();
+        for (StatusBarNotification notification : notifications) {
+            if (notification.getId() == THRESH_ID)
+                notif += THRESH_ID;
+            if (notification.getId() == ACTIVITY_ID)
+                notif += ACTIVITY_ID;
+        }
+        return notif;
     }
 
 
