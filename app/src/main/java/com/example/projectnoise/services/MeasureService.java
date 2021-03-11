@@ -12,11 +12,14 @@ import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.MediaScannerConnection;
 import android.os.Build;
+import android.os.Environment;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -29,6 +32,7 @@ import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
@@ -108,12 +112,15 @@ public class MeasureService extends Service {
     /** Helper function to create foreground notification **/
 
     private Notification createForegroundNotification(PendingIntent pendingIntent) {
+        int color = Color.argb(255, 228, 14, 18);
         return new NotificationCompat.Builder(this, PERSISTENT_CHANNEL_ID)
                 .setOngoing(true)
                 .setContentTitle("Measure Service")
                 .setContentText("Measuring dB")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
+                .setColor(color)
+                .setColorized(true)
                 .build();
     }
 
@@ -285,14 +292,16 @@ public class MeasureService extends Service {
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
             }
 
-            Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
-            writeToLog(formatLog(average));
+
 
             // Check preferences to see if notification types are enabled
             if (toggleThresholdNotifications)
                 threshCheck(average);
             if (toggleActivityNotifications && !getCurActivity().equals("sleep"))
                  activityNotificationCheck();
+
+            Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
+            writeToLog(formatLog(average));
 
 
             // Check if recording service has ended or not
@@ -313,31 +322,68 @@ public class MeasureService extends Service {
     /** Functions that format and log date/time, average dB, and activity to log file */
 
     private String formatLog(double average) {
+
+        int threshPresent = 0;
+        int activityPresent = 0;
+        int notif = notificationCheck();
+        if (notif == THRESH_ID)
+            threshPresent = 1;
+        else if (notif == ACTIVITY_ID)
+            activityPresent = 1;
+        else if (notif == THRESH_ID + ACTIVITY_ID) {
+            threshPresent = 1;
+            activityPresent = 1;
+        }
+
+        notificationCheck();
         String current_activity = getCurActivity();
         Date currentTime = Calendar.getInstance().getTime();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
         @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
         String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
-        return date + "," + time + "," + average + "," + current_activity+ "\n";
+        Log.d(TAG, "LOGGING: " + date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n");
+        return date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n";
+    }
+
+
+    private int notificationCheck() {
+        int notif = 0;
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        StatusBarNotification[] notifications =
+                notificationManager.getActiveNotifications();
+        for (StatusBarNotification notification : notifications) {
+            if (notification.getId() == THRESH_ID)
+                notif += THRESH_ID;
+            if (notification.getId() == ACTIVITY_ID)
+                notif += ACTIVITY_ID;
+        }
+        return notif;
     }
 
 
     public void writeToLog(String text){
-        FileOutputStream fos = null;
+        String state = Environment.getExternalStorageState();
+        if (!Environment.MEDIA_MOUNTED.equals(state))
+            Log.d(TAG, "External storage not mounted");
+
+        /*
+          Saves to Android/data/com.example.projectnoise/files when viewed over USB
+          full path is /storage/emulated/0/Android/data/com.example.projectnoise/files/log.csv
+         */
+        File file = new File(getExternalFilesDir(null), "log.csv");
+
         try {
-            fos = openFileOutput(FILE_NAME, MODE_APPEND);
+            boolean success = file.createNewFile();
+            FileOutputStream fos = new FileOutputStream(file, true);
             fos.write(text.getBytes());
-            Toast.makeText(this,"Saved to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
+            MediaScannerConnection.scanFile(this, new String[] {file.toString()}, null, null);
+            fos.flush();
+            fos.close();
 
-        } catch (IOException e) { e.printStackTrace(); }
-
-        finally {
-            if(fos!=null){
-                try {
-                    fos.close();
-                } catch (IOException e) { e.printStackTrace(); }
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG, "FILE SAVING FAILED");
         }
     }
 
@@ -413,6 +459,7 @@ public class MeasureService extends Service {
                 .setContentText("What are you up to? Tap to update your current activity.")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setColor(color)
+                .setColorized(true)
                 .setContentIntent(pendingIntent)
                 .build();
         threshNotification.flags = Notification.FLAG_AUTO_CANCEL;
@@ -423,6 +470,7 @@ public class MeasureService extends Service {
     /** Helper function to create activity notification **/
 
     private void createActivityNotification(){
+        int color = Color.argb(255, 228, 14, 18);
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
@@ -430,6 +478,8 @@ public class MeasureService extends Service {
                 .setContentTitle("Activity tracker")
                 .setContentText("What are you up to? Tap to update your current activity.")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setColor(color)
+                .setColorized(true)
                 .setContentIntent(pendingIntent)
                 .build();
         activityNotification.flags = Notification.FLAG_AUTO_CANCEL;
