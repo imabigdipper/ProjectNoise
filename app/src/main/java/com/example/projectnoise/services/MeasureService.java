@@ -111,12 +111,15 @@ public class MeasureService extends Service {
     /** Helper function to create foreground notification **/
 
     private Notification createForegroundNotification(PendingIntent pendingIntent) {
+        int color = Color.argb(255, 228, 14, 18);
         return new NotificationCompat.Builder(this, PERSISTENT_CHANNEL_ID)
                 .setOngoing(true)
                 .setContentTitle("Measure Service")
                 .setContentText("Measuring dB")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
+                .setColor(color)
+                .setColorized(true)
                 .build();
     }
 
@@ -331,10 +334,10 @@ public class MeasureService extends Service {
         if (!Environment.MEDIA_MOUNTED.equals(state))
             Log.d(TAG, "External storage not mounted");
 
-        /**
-         * Saves to Android/data/com.example.projectnoise/files when viewed over USB
-         * full path is /storage/emulated/0/Android/data/com.example.projectnoise/files/log.csv
-         **/
+        /*
+          Saves to Android/data/com.example.projectnoise/files when viewed over USB
+          full path is /storage/emulated/0/Android/data/com.example.projectnoise/files/log.csv
+         */
         File file = new File(getExternalFilesDir(null), "log.csv");
 
         try {
@@ -423,6 +426,7 @@ public class MeasureService extends Service {
                 .setContentText("What are you up to? Tap to update your current activity.")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setColor(color)
+                .setColorized(true)
                 .setContentIntent(pendingIntent)
                 .build();
         threshNotification.flags = Notification.FLAG_AUTO_CANCEL;
@@ -433,6 +437,7 @@ public class MeasureService extends Service {
     /** Helper function to create activity notification **/
 
     private void createActivityNotification(){
+        int color = Color.argb(255, 228, 14, 18);
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
@@ -440,6 +445,8 @@ public class MeasureService extends Service {
                 .setContentTitle("Activity tracker")
                 .setContentText("What are you up to? Tap to update your current activity.")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setColor(color)
+                .setColorized(true)
                 .setContentIntent(pendingIntent)
                 .build();
         activityNotification.flags = Notification.FLAG_AUTO_CANCEL;
