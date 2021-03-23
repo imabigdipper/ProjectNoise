@@ -8,6 +8,7 @@
     <string name="button_stop_text">Stop Service</string>
     <string name="home_frag_text">Service Panel</string>
     <string name="db_reading">0</string>
+    <string name="password">noise4940</string>
     <!-- Preference Titles -->
     <string name="measuring_header">Measuring</string>
     <string name="sync_header">Sync</string>
