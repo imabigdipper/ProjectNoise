@@ -1,11 +1,13 @@
 package com.example.projectnoise.services;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -39,6 +41,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class MeasureService extends Service {
     public static final String PERSISTENT_CHANNEL_ID = "PersistentServiceChannel";
@@ -326,6 +329,7 @@ public class MeasureService extends Service {
         int threshPresent = 0;
         int activityPresent = 0;
         int notif = notificationCheck();
+        int isForeground = ForegroundCheck();
         if (notif == THRESH_ID)
             threshPresent = 1;
         else if (notif == ACTIVITY_ID)
@@ -343,7 +347,7 @@ public class MeasureService extends Service {
         String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
         Log.d(TAG, "LOGGING: " + date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n");
-        return date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n";
+        return date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "," + isForeground + "\n";
     }
 
 
@@ -361,6 +365,21 @@ public class MeasureService extends Service {
         return notif;
     }
 
+    private int ForegroundCheck(){
+        int isForeground = 0;
+        ActivityManager activityManager = (ActivityManager) getSystemService(Service.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+        for(ActivityManager.RunningAppProcessInfo appProcess : appProcesses){
+            if(appProcess.processName.equals(getPackageName())){
+                if (appProcess.importance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    isForeground = 0;
+                }else{
+                    isForeground = 1;
+                }
+            }
+        }
+        return isForeground;
+    }
 
     public void writeToLog(String text){
         String state = Environment.getExternalStorageState();
