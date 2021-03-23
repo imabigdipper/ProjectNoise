@@ -22,5 +22,14 @@
         android:name="com.example.projectnoise.ui.preferences.SettingsFragment"
         android:label="@string/title_settings"
         tools:layout="@layout/fragment_dashboard" />
+    <fragment
+        android:id="@+id/password"
+        android:name="com.example.projectnoise.ui.activities.PasswordFragment"
+        android:label="Password"
+        tools:layout="@layout/fragment_dashboard" >
+        <action
+            android:id="@+id/action_password_to_navigation_preferences"
+            app:destination="@id/navigation_preferences" />
+    </fragment>
 
 </navigation>
