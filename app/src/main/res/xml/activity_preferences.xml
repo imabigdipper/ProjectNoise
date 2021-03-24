@@ -1,10 +1,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:key="activity_screen">
+
+
     <PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/activity_header">
 
-        <ListPreference
+        <com.example.projectnoise.util.ShowListPreference
             app:key="current_activity"
             app:entries="@array/activity_entries"
             app:entryValues="@array/activity_values"

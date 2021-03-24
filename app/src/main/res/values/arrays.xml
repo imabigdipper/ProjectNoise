@@ -1,19 +1,29 @@
 <resources>
     <!-- Activity Preference -->
     <string-array name="activity_entries">
+        <item>Home</item>
+        <item>Academic</item>
+        <item>Social</item>
         <item>Transport</item>
-        <item>Class/Studying</item>
-        <item>Exercising</item>
-        <item>Sleeping</item>
+        <item>Exercise</item>
+        <item>Music Listening</item>
+        <item>Music Creating</item>
+        <item>Work</item>
+        <item>Sleep</item>
         <item>Custom 1</item>
         <item>Custom 2</item>
         <item>Custom 3</item>
     </string-array>
 
     <string-array name="activity_values">
+        <item>home</item>
+        <item>academic</item>
+        <item>social</item>
         <item>transport</item>
-        <item>study</item>
         <item>exercise</item>
+        <item>music listening</item>
+        <item>music creating</item>
+        <item>work</item>
         <item>sleep</item>
         <item>custom1</item>
         <item>custom2</item>
