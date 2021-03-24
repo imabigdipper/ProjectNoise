@@ -16,7 +16,7 @@
             android:key="service_stop"
             android:summary="Stops measuring service"
             />
-</PreferenceCategory>
+    </PreferenceCategory>
 
 
     <PreferenceCategory
@@ -117,6 +117,36 @@
             android:defaultValue="30"
             app:summary="How many recording intervals above the threshold pass until the user is notified"
             app:title="@string/threshold_intervals_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="Miscellaneous">
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="auto_activity_list"
+            app:defaultValue="true"
+            app:title="Auto-Activity List"
+            app:summary="Automatically show the activity list whenever the activity panel is opened" />
+
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="toggle_password"
+            app:defaultValue="true"
+            app:title="Password Lock"
+            app:summary="Lock the settings panel with a password" />
+
+
+        <EditTextPreference
+            app:dependency="toggle_password"
+            android:inputType="text"
+            app:key="settings_password"
+            app:defaultValue="pnoise"
+            app:title="Settings Panel Password"
+            app:useSimpleSummaryProvider="true"/>
 
     </PreferenceCategory>
 

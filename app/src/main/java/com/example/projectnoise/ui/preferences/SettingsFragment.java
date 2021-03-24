@@ -49,11 +49,4 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
     }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        PreferenceScreen preferenceScreen = (PreferenceScreen)findPreference("activity_screen");
-        ShowListPreference preference = findPreference("current_activity");
-        onDisplayPreferenceDialog(preference);
-    }
 }
