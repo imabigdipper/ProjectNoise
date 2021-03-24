@@ -1,11 +1,13 @@
 package com.example.projectnoise.services;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -39,9 +41,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class MeasureService extends Service {
     public static final String PERSISTENT_CHANNEL_ID = "PersistentServiceChannel";
+    public static final int PERSISTENT_ID = 1;
     public static final String ALERT_CHANNEL_ID = "AlertServiceChannel";
 
     private static final String FILE_NAME = "example.csv";
@@ -75,10 +79,9 @@ public class MeasureService extends Service {
         createPersistentNotificationChannel();
         createAlertNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         // Start foreground service with given foreground notification & initialize preference variables
-        startForeground(1, createForegroundNotification(pendingIntent));
+        startForeground(PERSISTENT_ID, createForegroundNotification());
         initPrefs();
         setActivityNotifTime();
 
@@ -111,12 +114,14 @@ public class MeasureService extends Service {
 
     /** Helper function to create foreground notification **/
 
-    private Notification createForegroundNotification(PendingIntent pendingIntent) {
+    private Notification createForegroundNotification() {
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         int color = Color.argb(255, 228, 14, 18);
         return new NotificationCompat.Builder(this, PERSISTENT_CHANNEL_ID)
                 .setOngoing(true)
-                .setContentTitle("Measure Service")
-                .setContentText("Measuring dB")
+                .setContentTitle("Recording in Progress...")
+                .setContentText("Current Activity: " + getCurActivity())
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .setColor(color)
@@ -177,7 +182,9 @@ public class MeasureService extends Service {
     }
 
 
-    /** Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread. **/
+    /**
+     * Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread.
+     */
 
     private void startRecorder() {
         try {
@@ -196,7 +203,9 @@ public class MeasureService extends Service {
     }
 
 
-    /** Releases and cleans AudioRecord, Handler, and HandlerThread instances. **/
+    /**
+     * Releases and cleans AudioRecord, Handler, and HandlerThread instances.
+     */
 
     private void stopRecorder() {
         Log.i(TAG, "Stopping the audio stream");
@@ -264,6 +273,7 @@ public class MeasureService extends Service {
     Runnable measureRunnable = new Runnable() {
         @Override
         public void run() {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
             long startTime = SystemClock.uptimeMillis();
             long measureTime = SystemClock.uptimeMillis() + (1000 * averageIntervalLen);
             short[] buffer = new short[bufferSize];
@@ -272,6 +282,7 @@ public class MeasureService extends Service {
             double instant;
             int count = 0;
             double average = 0;
+            boolean beenOpened = false;
 
 
             // Continuously read audio into buffer for measureTime ms
@@ -290,25 +301,26 @@ public class MeasureService extends Service {
                         : 20 * Math.log10(dbSumTotal / count) + 8.25;
 
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
+
+                // If app hasn't been opened during the current recording interval, check if it is currently open
+                beenOpened = beenOpened || ForegroundCheck();
             }
-
-
-
-            // Check preferences to see if notification types are enabled
-            if (toggleThresholdNotifications)
-                threshCheck(average);
-            if (toggleActivityNotifications && !getCurActivity().equals("sleep"))
-                 activityNotificationCheck();
-
-            Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
-            writeToLog(formatLog(average));
-
 
             // Check if recording service has ended or not
             if (isRecording) {
+                // Check preferences to see if notification types are enabled
+                if (toggleThresholdNotifications)
+                    threshCheck(average);
+                if (toggleActivityNotifications && !getCurActivity().equals("sleep"))
+                    activityNotificationCheck();
+
+                Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
+                writeToLog(formatLog(average, beenOpened));
+                notificationManager.notify(PERSISTENT_ID, createForegroundNotification());
                 // Call the runnable again to measure average of next time block
                 handler.post(this);
             } else {
+                notificationManager.cancel(PERSISTENT_ID);
                 // Thread is done recording, release AudioRecord instance
                 Log.d(TAG, "Stopping measuring thread");
                 recorder.release();
@@ -319,10 +331,13 @@ public class MeasureService extends Service {
     };
 
 
-    /** Functions that format and log date/time, average dB, and activity to log file */
+    /**
+     * Function that formats a single line of the logfile containing the date/time, average dB, activity, notification visibility, and foreground status
+     * @param average   The calculated average dB of the last completed recording interval
+     * @return          Comma separated and newline terminated line with date, time, avg dB, activity, notification visibility, and foreground status data.
+     */
 
-    private String formatLog(double average) {
-
+    private String formatLog(double average, boolean isForeground) {
         int threshPresent = 0;
         int activityPresent = 0;
         int notif = notificationCheck();
@@ -343,9 +358,14 @@ public class MeasureService extends Service {
         String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
         Log.d(TAG, "LOGGING: " + date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n");
-        return date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n";
+        return date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "," + isForeground + "\n";
     }
 
+
+    /**
+     * Checks for the presence of Activity and Threshold Notification in the Notification bar.
+     * @return THRESH_ID, ACTIVITY_ID, or THRESH_ID + ACTIVITY_ID
+     */
 
     private int notificationCheck() {
         int notif = 0;
@@ -360,6 +380,19 @@ public class MeasureService extends Service {
         }
         return notif;
     }
+
+
+    /**
+     * Checks if the app is in the foreground.
+     * @return 1 if the app is currently in the foreground, 0 if it is not.
+     */
+
+    private boolean ForegroundCheck(){
+        ActivityManager.RunningAppProcessInfo appProcessInfo = new ActivityManager.RunningAppProcessInfo();
+        ActivityManager.getMyMemoryState(appProcessInfo);
+        return (appProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND || appProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE);
+    }
+
 
 
     public void writeToLog(String text){
