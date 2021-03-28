@@ -30,6 +30,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.projectnoise.MainActivity;
 import com.example.projectnoise.R;
+import com.example.projectnoise.util.MovingAverage;
 import com.example.projectnoise.util.Values;
 
 import org.jtransforms.fft.DoubleFFT_1D;
@@ -246,6 +247,7 @@ public class MeasureService extends Service {
     @SuppressLint("SimpleDateFormat")
     private SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
     private String nextActivityNotifTime;
+    private MovingAverage threshQueue = new MovingAverage(thresholdIntervalNum);
     private int threshCounter = 0;
 
     // AudioRecord instance configuration
@@ -436,20 +438,28 @@ public class MeasureService extends Service {
     }
 
 
-    /** Helper function check threshold and display notification if necessary **/
+    /**
+     * Helper function check threshold and display notification if necessary. Uses a queue in MovingAverage class to calculate moving average.
+     */
 
-    private void threshCheck(double average) {
-        Log.d(TAG, "Threshold notifs enabled, checking thresh data...");
-        if (average > dbThreshold)
-            threshCounter++;
-        else
-            threshCounter = 0;
-        if (threshCounter >= thresholdIntervalNum) {
-            Log.d(TAG, "Thresholds met, sending thresh notification");
+    private void threshCheck(double current_average) {
+        threshQueue.addData(current_average);
+        if (threshQueue.getMean() >= dbThreshold)
             createThresholdNotification();
-            threshCounter = 0;
-        }
     }
+
+//    private void threshCheck(double average) {
+//        Log.d(TAG, "Threshold notifs enabled, checking thresh data...");
+//        if (average > dbThreshold)
+//            threshCounter++;
+//        else
+//            threshCounter = 0;
+//        if (threshCounter >= thresholdIntervalNum) {
+//            Log.d(TAG, "Thresholds met, sending thresh notification");
+//            createThresholdNotification();
+//            threshCounter = 0;
+//        }
+//    }
 
 
     /**
