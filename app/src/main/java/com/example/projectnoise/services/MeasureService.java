@@ -42,7 +42,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 public class MeasureService extends Service {
     public static final String PERSISTENT_CHANNEL_ID = "PersistentServiceChannel";
@@ -160,25 +162,31 @@ public class MeasureService extends Service {
     }
 
 
-    /** Initialize variables from preferences to minimize getPreference calls **/
+    /**
+     * Initialize variables from root_preferences file
+     */
 
     private void initPrefs() {
         toggleCalibration = preferences.getBoolean("toggle_calibration", false);
         toggleThresholdNotifications = preferences.getBoolean("toggle_threshold_notifications", false);
         toggleActivityNotifications = preferences.getBoolean("toggle_activity_notifications", false);
+        toggleWakeupNotifications = preferences.getBoolean("toggle_wakeup_notification", false);
         averageIntervalLen = Long.parseLong(preferences.getString("average_interval_len", "30"));
 
-        if (toggleCalibration) {
+        if (toggleCalibration)
             calibration = Double.parseDouble(preferences.getString("calibration", "0"));
-        }
 
         if (toggleThresholdNotifications) {
             dbThreshold = Double.parseDouble(preferences.getString("db_threshold", "100"));
             thresholdIntervalNum = Integer.parseInt(preferences.getString("threshold_interval_num", "30"));
         }
 
-        if (toggleActivityNotifications) {
+        if (toggleActivityNotifications)
             notificationIntervalLen = Double.parseDouble(preferences.getString("notification_interval_len", "2"));
+
+        if (toggleWakeupNotifications) {
+            wakeupNotificationTime = preferences.getString("wakeup_time", "09:00");
+            setWakeupDate();
         }
     }
 
@@ -241,11 +249,15 @@ public class MeasureService extends Service {
     private boolean toggleCalibration;
     private boolean toggleThresholdNotifications;
     private boolean toggleActivityNotifications;
+    private boolean toggleWakeupNotifications;
     private double notificationIntervalLen;
+    private String wakeupNotificationTime;
+    private Date wakeupDate;
 
     // Date and counter stuff for determining when to send out notifications
     @SuppressLint("SimpleDateFormat")
     private SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+    private SimpleDateFormat sdfWake = new SimpleDateFormat("HH:mm");
     private String nextActivityNotifTime;
     private MovingAverage threshQueue = new MovingAverage(thresholdIntervalNum);
     private int threshCounter = 0;
@@ -310,11 +322,11 @@ public class MeasureService extends Service {
 
             // Check if recording service has ended or not
             if (isRecording) {
-                // Check preferences to see if notification types are enabled
-                if (toggleThresholdNotifications)
-                    threshCheck(average);
-                if (toggleActivityNotifications && !getCurActivity().equals("sleep"))
-                    activityNotificationCheck();
+                // Check preferences to see if notification types are enabled, if so, check if they need to be sent
+                if (toggleThresholdNotifications)               threshCheck(average);
+                if (toggleActivityNotifications &&
+                        !getCurActivity().equals("sleep"))      activityNotificationCheck();
+                if (toggleWakeupNotifications)                  wakeupNotificationCheck();
 
                 Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
                 writeToLog(formatLog(average, beenOpened));
@@ -461,6 +473,29 @@ public class MeasureService extends Service {
 //        }
 //    }
 
+    private void setWakeupDate() {
+        sdfWake.setTimeZone(TimeZone.getTimeZone("GMT"));
+        Date wakeupTime = null;
+        try {
+            wakeupTime = sdfWake.parse(wakeupNotificationTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        // today
+        Calendar date = new GregorianCalendar();
+        // reset hour, minutes, seconds and millis
+        date.set(Calendar.HOUR_OF_DAY, 0);
+        date.set(Calendar.MINUTE, 0);
+        date.set(Calendar.SECOND, 0);
+        date.set(Calendar.MILLISECOND, 0);
+        // go forward one day
+        date.add(Calendar.DATE, 1);
+
+        wakeupDate = new Date(date.getTimeInMillis() + wakeupTime.getTime());
+        Log.d(TAG, "Wakeup notification time set to:  " + wakeupDate);
+    }
+
+
 
     /**
      * Function compares current time against next time at which an activity notification should be sent.
@@ -472,21 +507,40 @@ public class MeasureService extends Service {
         try {
             Date curTime = sdf.parse(sdf.format(System.currentTimeMillis()));
             Date notifTime = sdf.parse(nextActivityNotifTime);
-
             Log.d(TAG, "curTime: " + sdf.format(System.currentTimeMillis()));
             Log.d(TAG, "notifTime: " + nextActivityNotifTime);
 
-            assert curTime != null;
-            if (curTime.after(notifTime)) {
-                Log.d(TAG, "Time to send an activity notification");
-                createActivityNotification();
-                setActivityNotifTime();
-                return;
+            if (!getCurActivity().equals("sleep")) {
+                assert curTime != null;
+                if (curTime.after(notifTime)) {
+                    Log.d(TAG, "Time to send an activity notification");
+                    createActivityNotification();
+                    setActivityNotifTime();
+                    return;
+                }
             }
-
             Log.d(TAG, "Not time to send activity notification yet");
-
         } catch (ParseException e) { e.printStackTrace(); }
+    }
+
+
+    /**
+     *
+     */
+
+    private void wakeupNotificationCheck() {
+        Date curDate = new Date();
+        Log.d(TAG, "curDate: " + curDate);
+        Log.d(TAG, "wakeupDate: " + wakeupDate);
+
+        // Check if it is time to send wakeup notification
+        if (curDate.after(wakeupDate)) {
+            Log.d(TAG, "Time to send a wakeup notification");
+            createActivityNotification();
+            setWakeupDate();
+            return;
+        }
+        Log.d(TAG, "Not time to send wakeup notification yet");
     }
 
 
@@ -529,6 +583,12 @@ public class MeasureService extends Service {
         notificationManager.notify(ACTIVITY_ID, activityNotification);
     }
 
+
+    /**
+     * Does a Fast Fourier Transform to get dB data from raw audio data
+     * @param rawData A buffer containing raw audio data recorded form the microphone.
+     * @return The average dB level of a snippet of raw audio data
+     */
 
     private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
