@@ -50,13 +50,13 @@ public class PasswordFragment extends Fragment {
         btnSubmit = view.findViewById(R.id.btnSubmit);
 
         btnSubmit.setOnClickListener(v -> {
-            //get input from textbox
+            // Get input from textbox
             String text = password.getText().toString();
-            //see if it matches password (password is defined in res/values/strings.xml
+            // See if it matches password, defined in res/xml/root_preferences.xml
             if(text.equals(preferences.getString("settings_password", "pnoise"))){
                 InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-                //navigate to settings page
+                // Navigate to settings page
                 Navigation.findNavController(view).navigate(R.id.navigation_preferences);
 
             }
