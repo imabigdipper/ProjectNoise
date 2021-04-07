@@ -116,6 +116,7 @@
             app:dependency="toggle_wakeup_notification"
             app:iconSpaceReserved="true"
             app:key="wakeup_time"
+            android:defaultValue="09:00"
             app:summary="The time at which a wakeup notification will be sent"
             app:title="Wakeup Notification Time"
             app:useSimpleSummaryProvider="true" />

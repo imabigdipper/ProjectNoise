@@ -88,10 +88,10 @@ public class MeasureService extends Service {
         initPrefs();
         setActivityNotifTime();
 
-
-
         // Helper function to set up thread for measuring sound data
         startRecorder();
+
+        // Log the parameters of the current recording session
         Log.d(TAG, "Starting measureService thread with \n" +
                 "Calibration: " + toggleCalibration + "\n" +
                 "Calibration Constant: " + calibration + " dB \n" +
@@ -100,23 +100,18 @@ public class MeasureService extends Service {
                 "Activity Notification Interval: " + notificationIntervalLen + " hours\n" +
                 "Threshold Notifications: " + toggleThresholdNotifications + "\n" +
                 "Threshold Intervals: " + thresholdIntervalNum + "\n" +
-                "Threshold: " + dbThreshold +  " dB \n"
+                "Threshold: " + dbThreshold +  " dB \n" +
+                "Wakeup Notifications: " + toggleWakeupNotifications + "\n" +
+                "Wakeup Notification Time: " + wakeupNotificationTime +  " dB \n"
                 );
 
         return  START_STICKY;
     }
 
 
-    private void setActivityNotifTime() {
-        nextActivityNotifTime = sdf.format(System.currentTimeMillis() + (long)(60*60*1000*notificationIntervalLen));
-        Log.d(TAG, "curtime: " + sdf.format(System.currentTimeMillis()));
-        Log.d(TAG, "nexttime: " + nextActivityNotifTime);
-    }
-
-
-
-    /** Helper function to create foreground notification **/
-
+    /**
+     * Helper function to create persistent foreground notification
+     */
     private Notification createForegroundNotification() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
@@ -133,8 +128,9 @@ public class MeasureService extends Service {
     }
 
 
-    /** Helper function to create notification channel **/
-
+    /**
+     * Helper function to create notification channel for the persistend notification
+     */
     private void createPersistentNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
@@ -148,6 +144,9 @@ public class MeasureService extends Service {
         }
     }
 
+    /**
+     * Helper function to create notification channel for the alert (activity, threshold) notifications
+     */
     private void createAlertNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
@@ -165,7 +164,6 @@ public class MeasureService extends Service {
     /**
      * Initialize variables from root_preferences file
      */
-
     private void initPrefs() {
         toggleCalibration = preferences.getBoolean("toggle_calibration", false);
         toggleThresholdNotifications = preferences.getBoolean("toggle_threshold_notifications", false);
@@ -194,7 +192,6 @@ public class MeasureService extends Service {
     /**
      * Prepares AudioRecord, Handler, and HandlerThread instances then posts measureRunnable to the thread.
      */
-
     private void startRecorder() {
         try {
             recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
@@ -215,7 +212,6 @@ public class MeasureService extends Service {
     /**
      * Releases and cleans AudioRecord, Handler, and HandlerThread instances.
      */
-
     private void stopRecorder() {
         Log.i(TAG, "Stopping the audio stream");
         if (recorder != null) {
@@ -232,9 +228,8 @@ public class MeasureService extends Service {
 
 
     /**
-     * This chunk of the service is all about the dB measuring process
-     **/
-
+     * Initialize variables related to the dB and activity recording process
+     */
     private static final String TAG = "Measure Service";
 
     // Notification IDS
@@ -282,8 +277,6 @@ public class MeasureService extends Service {
     /** Runnable executed inside the HandlerThread. Measures sound data over the given interval then calculates average dB. Re-invokes itself until service is killed. Heavily based on:
      * https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
      */
-
-
     Runnable measureRunnable = new Runnable() {
         @Override
         public void run() {
@@ -302,18 +295,20 @@ public class MeasureService extends Service {
             // Continuously read audio into buffer for measureTime ms
             while (SystemClock.uptimeMillis() < measureTime && isRecording) {
                 recorder.read(buffer, 0, bufferSize);
-                //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-                dB = doFFT(buffer); // Perform Fast Fourier Transform
+
+                // Perform Fast Fourier Transform to get dB
+                dB = doFFT(buffer);
                 if (dB != Double.NEGATIVE_INFINITY) {
                     dbSumTotal += dB;
                     count++;
                 }
 
-                // Check if calibration is enabled
+                // Check if calibration is enabled, if so, add the calibration constant
                 average = toggleCalibration ?
                         20 * Math.log10(dbSumTotal / count) + 8.25 + calibration
                         : 20 * Math.log10(dbSumTotal / count) + 8.25;
 
+                // Instant dB
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
 
                 // If app hasn't been opened during the current recording interval, check if it is currently open
@@ -328,12 +323,15 @@ public class MeasureService extends Service {
                         !getCurActivity().equals("sleep"))      activityNotificationCheck();
                 if (toggleWakeupNotifications)                  wakeupNotificationCheck();
 
+                // Log recorded info and update persistent notification with current activity
                 Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
                 writeToLog(formatLog(average, beenOpened));
                 notificationManager.notify(PERSISTENT_ID, createForegroundNotification());
+
                 // Call the runnable again to measure average of next time block
                 handler.post(this);
             } else {
+                // Stop thread, remove persistent notification, release instances
                 notificationManager.cancel(PERSISTENT_ID);
                 // Thread is done recording, release AudioRecord instance
                 Log.d(TAG, "Stopping measuring thread");
@@ -350,8 +348,8 @@ public class MeasureService extends Service {
      * @param average   The calculated average dB of the last completed recording interval
      * @return          Comma separated and newline terminated line with date, time, avg dB, activity, notification visibility, and foreground status data.
      */
-
     private String formatLog(double average, boolean isForeground) {
+        // Check which notification are present
         int threshPresent = 0;
         int activityPresent = 0;
         int notif = notificationCheck();
@@ -363,14 +361,14 @@ public class MeasureService extends Service {
             threshPresent = 1;
             activityPresent = 1;
         }
-
-        notificationCheck();
+        // Get required data and format single line in logfile
         String current_activity = getCurActivity();
         Date currentTime = Calendar.getInstance().getTime();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
         @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
         String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
+
         Log.d(TAG, "LOGGING: " + date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "\n");
         return date + "," + time + "," + average + "," + current_activity + "," + threshPresent + "," + activityPresent + "," + isForeground + "\n";
     }
@@ -380,7 +378,6 @@ public class MeasureService extends Service {
      * Checks for the presence of Activity and Threshold Notification in the Notification bar.
      * @return THRESH_ID, ACTIVITY_ID, or THRESH_ID + ACTIVITY_ID
      */
-
     private int notificationCheck() {
         int notif = 0;
         NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
@@ -400,7 +397,6 @@ public class MeasureService extends Service {
      * Checks if the app is in the foreground.
      * @return 1 if the app is currently in the foreground, 0 if it is not.
      */
-
     private boolean ForegroundCheck(){
         ActivityManager.RunningAppProcessInfo appProcessInfo = new ActivityManager.RunningAppProcessInfo();
         ActivityManager.getMyMemoryState(appProcessInfo);
@@ -408,7 +404,10 @@ public class MeasureService extends Service {
     }
 
 
-
+    /**
+     * Writes given data to a logfile stored on the phone's disk
+     * @param text Line to be written to the logfile
+     */
     public void writeToLog(String text){
         String state = Environment.getExternalStorageState();
         if (!Environment.MEDIA_MOUNTED.equals(state))
@@ -435,8 +434,9 @@ public class MeasureService extends Service {
     }
 
 
-    /** Returns current activity */
-
+    /**
+     * Returns current activity from the Activities page
+     */
     private String getCurActivity() {
         String activity = preferences.getString("current_activity","None");
         if(activity.equals("custom1"))
@@ -453,26 +453,16 @@ public class MeasureService extends Service {
     /**
      * Helper function check threshold and display notification if necessary. Uses a queue in MovingAverage class to calculate moving average.
      */
-
     private void threshCheck(double current_average) {
         threshQueue.addData(current_average);
         if (threshQueue.getMean() >= dbThreshold)
             createThresholdNotification();
     }
 
-//    private void threshCheck(double average) {
-//        Log.d(TAG, "Threshold notifs enabled, checking thresh data...");
-//        if (average > dbThreshold)
-//            threshCounter++;
-//        else
-//            threshCounter = 0;
-//        if (threshCounter >= thresholdIntervalNum) {
-//            Log.d(TAG, "Thresholds met, sending thresh notification");
-//            createThresholdNotification();
-//            threshCounter = 0;
-//        }
-//    }
 
+    /**
+     * Sets new time for a wakeup notification to be sent based on the wakeup notification setting.
+     */
     private void setWakeupDate() {
         sdfWake.setTimeZone(TimeZone.getTimeZone("GMT"));
         Date wakeupTime = null;
@@ -496,12 +486,20 @@ public class MeasureService extends Service {
     }
 
 
+    /**
+     * Sets a new time for an activity notification to be sent.
+     */
+    private void setActivityNotifTime() {
+        nextActivityNotifTime = sdf.format(System.currentTimeMillis() + (long)(60*60*1000*notificationIntervalLen));
+        Log.d(TAG, "curtime: " + sdf.format(System.currentTimeMillis()));
+        Log.d(TAG, "nexttime: " + nextActivityNotifTime);
+    }
+
 
     /**
      * Function compares current time against next time at which an activity notification should be sent.
      * If the interval has passed, send the notification and set the time for the next notification
      */
-
     private void activityNotificationCheck() {
         Log.d(TAG, "Activity notifs enabled, checking interval data...");
         try {
@@ -525,9 +523,8 @@ public class MeasureService extends Service {
 
 
     /**
-     *
+     * Check if it is time to send a wakeup activity notification.
      */
-
     private void wakeupNotificationCheck() {
         Date curDate = new Date();
         Log.d(TAG, "curDate: " + curDate);
@@ -544,8 +541,9 @@ public class MeasureService extends Service {
     }
 
 
-    /** Helper function to create threshold notification */
-
+    /**
+     * Helper function to create a threshold notification
+     */
     private void createThresholdNotification() {
         int color = Color.argb(255, 228, 14, 18);
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -564,8 +562,9 @@ public class MeasureService extends Service {
     }
 
 
-    /** Helper function to create activity notification **/
-
+    /**
+     * Helper function to create an activity notification
+     */
     private void createActivityNotification(){
         int color = Color.argb(255, 228, 14, 18);
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -589,7 +588,6 @@ public class MeasureService extends Service {
      * @param rawData A buffer containing raw audio data recorded form the microphone.
      * @return The average dB level of a snippet of raw audio data
      */
-
     private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
         double avg = 0.0, amplitude = 0.0;
