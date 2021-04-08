@@ -177,6 +177,7 @@ public class MeasureService extends Service {
         if (toggleThresholdNotifications) {
             dbThreshold = Double.parseDouble(preferences.getString("db_threshold", "100"));
             thresholdIntervalNum = Integer.parseInt(preferences.getString("threshold_interval_num", "30"));
+            threshQueue = new MovingAverage(thresholdIntervalNum);
         }
 
         if (toggleActivityNotifications)
@@ -254,7 +255,7 @@ public class MeasureService extends Service {
     private SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
     private SimpleDateFormat sdfWake = new SimpleDateFormat("HH:mm");
     private String nextActivityNotifTime;
-    private MovingAverage threshQueue = new MovingAverage(thresholdIntervalNum);
+    private MovingAverage threshQueue;
     private int threshCounter = 0;
 
     // AudioRecord instance configuration
@@ -454,7 +455,9 @@ public class MeasureService extends Service {
      * Helper function check threshold and display notification if necessary. Uses a queue in MovingAverage class to calculate moving average.
      */
     private void threshCheck(double current_average) {
+        Log.d(TAG, "QUEUE adding : " + current_average);
         threshQueue.addData(current_average);
+        Log.d(TAG, "QUEUE MEAN: " + threshQueue.getMean());
         if (threshQueue.getMean() >= dbThreshold)
             createThresholdNotification();
     }
