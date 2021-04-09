@@ -87,6 +87,14 @@
             app:title="Threshold Notifications"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreference
+            app:iconSpaceReserved="true"
+            app:dependency="toggle_threshold_notifications"
+            app:key="toggle_threshold_algorithm"
+            app:summary="Toggle the use of the new or old threshold algorithm"
+            app:title="Use Rolling Window Algorithm"
+            app:useSimpleSummaryProvider="true" />
+
         <com.takisoft.preferencex.EditTextPreference
             app:dependency="toggle_threshold_notifications"
             android:inputType="numberDecimal"

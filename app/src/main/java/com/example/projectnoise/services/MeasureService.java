@@ -7,7 +7,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -23,7 +22,6 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -43,7 +41,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.TimeZone;
 
 public class MeasureService extends Service {
@@ -175,6 +172,7 @@ public class MeasureService extends Service {
             calibration = Double.parseDouble(preferences.getString("calibration", "0"));
 
         if (toggleThresholdNotifications) {
+            toggleNewThresholdAlgorithm = preferences.getBoolean("toggle_threshold_algorithm", true);
             dbThreshold = Double.parseDouble(preferences.getString("db_threshold", "100"));
             thresholdIntervalNum = Integer.parseInt(preferences.getString("threshold_interval_num", "30"));
             threshQueue = new MovingAverage(thresholdIntervalNum);
@@ -244,6 +242,7 @@ public class MeasureService extends Service {
     private int thresholdIntervalNum;
     private boolean toggleCalibration;
     private boolean toggleThresholdNotifications;
+    private boolean toggleNewThresholdAlgorithm;
     private boolean toggleActivityNotifications;
     private boolean toggleWakeupNotifications;
     private double notificationIntervalLen;
@@ -319,7 +318,14 @@ public class MeasureService extends Service {
             // Check if recording service has ended or not
             if (isRecording) {
                 // Check preferences to see if notification types are enabled, if so, check if they need to be sent
-                if (toggleThresholdNotifications)               threshCheck(average);
+                if (toggleThresholdNotifications) {
+                    // Check which threshold algorithm is being used
+                    if (toggleNewThresholdAlgorithm)
+                        threshCheckQueue(average);
+                    else
+                        threshCheckCounter(average);
+                }
+
                 if (toggleActivityNotifications &&
                         !getCurActivity().equals("sleep"))      activityNotificationCheck();
                 if (toggleWakeupNotifications)                  wakeupNotificationCheck();
@@ -452,14 +458,31 @@ public class MeasureService extends Service {
 
 
     /**
-     * Helper function check threshold and display notification if necessary. Uses a queue in MovingAverage class to calculate moving average.
+     * Helper function to check threshold and display notification if necessary. Uses a queue in MovingAverage class to calculate moving average.
      */
-    private void threshCheck(double current_average) {
+    private void threshCheckQueue(double current_average) {
         Log.d(TAG, "QUEUE adding : " + current_average);
         threshQueue.addData(current_average);
         Log.d(TAG, "QUEUE MEAN: " + threshQueue.getMean());
         if (threshQueue.getMean() >= dbThreshold)
             createThresholdNotification();
+    }
+
+
+    /**
+     * Helper function check threshold and display notification if necessary. Uses a counter.
+     */
+    private void threshCheckCounter(double current_average) {
+        Log.d(TAG, "Threshold notifs enabled, checking thresh data...");
+        if (current_average > dbThreshold)
+            threshCounter++;
+        else
+            threshCounter = 0;
+        if (threshCounter >= thresholdIntervalNum) {
+            Log.d(TAG, "Thresholds met, sending thresh notification");
+            createThresholdNotification();
+            threshCounter = 0;
+        }
     }
 
 
