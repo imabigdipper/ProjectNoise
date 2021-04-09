@@ -48,20 +48,7 @@
             app:title="@string/calibration_title"
             app:useSimpleSummaryProvider="true" />
 
-<!--        <SwitchPreference-->
-<!--            app:iconSpaceReserved="false"-->
-<!--            app:key="service_scheduling"-->
-<!--            app:summary="Toggles ability to schedule dB measuring service"-->
-<!--            app:title="@string/service_scheduling_title"-->
-<!--            app:useSimpleSummaryProvider="true" />-->
 
-<!--        <com.takisoft.preferencex.TimePickerPreference-->
-<!--            app:dependency="service_scheduling"-->
-<!--            app:iconSpaceReserved="true"-->
-<!--            app:key="measureStartTime"-->
-<!--            app:summary="The time at which the dB measuring service will automatically start recording"-->
-<!--            app:title="@string/measureStartTime_title"-->
-<!--            app:useSimpleSummaryProvider="true" />-->
 
 <!--        <com.takisoft.preferencex.TimePickerPreference-->
 <!--            app:dependency="service_scheduling"-->
@@ -100,6 +87,14 @@
             app:title="Threshold Notifications"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreference
+            app:iconSpaceReserved="true"
+            app:dependency="toggle_threshold_notifications"
+            app:key="toggle_threshold_algorithm"
+            app:summary="Toggle the use of the new or old threshold algorithm"
+            app:title="Use Rolling Window Algorithm"
+            app:useSimpleSummaryProvider="true" />
+
         <com.takisoft.preferencex.EditTextPreference
             app:dependency="toggle_threshold_notifications"
             android:inputType="numberDecimal"
@@ -117,6 +112,22 @@
             android:defaultValue="30"
             app:summary="How many recording intervals above the threshold pass until the user is notified"
             app:title="@string/threshold_intervals_title" />
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="toggle_wakeup_notification"
+            app:summary="Toggles sending a wakeup notification regardless of the current activity"
+            app:title="Wakeup Notification"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.takisoft.preferencex.TimePickerPreference
+            app:dependency="toggle_wakeup_notification"
+            app:iconSpaceReserved="true"
+            app:key="wakeup_time"
+            android:defaultValue="09:00"
+            app:summary="The time at which a wakeup notification will be sent"
+            app:title="Wakeup Notification Time"
+            app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
 
