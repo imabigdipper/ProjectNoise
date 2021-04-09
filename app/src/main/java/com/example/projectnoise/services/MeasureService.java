@@ -57,7 +57,6 @@ public class MeasureService extends Service {
     public void onCreate() {
         super.onCreate();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        writeToLog("Date, Time, Average DB, Current Activity, Threshold Level Exceeded, Activity Notification Triggered, User Opened Notification");
     }
 
     @Override
@@ -410,6 +409,10 @@ public class MeasureService extends Service {
         try {
             boolean success = file.createNewFile();
             FileOutputStream fos = new FileOutputStream(file, true);
+            if(success)
+            {
+                fos.write("Date, Time, Average DB, Current Activity, Threshold Level Exceeded, Activity Notification Triggered, User Opened Notification \n".getBytes());
+            }
             fos.write(text.getBytes());
             MediaScannerConnection.scanFile(this, new String[] {file.toString()}, null, null);
             fos.flush();
