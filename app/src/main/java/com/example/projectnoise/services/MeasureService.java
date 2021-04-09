@@ -57,6 +57,7 @@ public class MeasureService extends Service {
     public void onCreate() {
         super.onCreate();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        writeToLog("Date, Time, Average DB, Current Activity, Threshold Level Exceeded, Activity Notification Triggered, User Opened Notification");
     }
 
     @Override
@@ -353,7 +354,7 @@ public class MeasureService extends Service {
         notificationCheck();
         String current_activity = getCurActivity();
         Date currentTime = Calendar.getInstance().getTime();
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm:ss" );
         @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
         String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
