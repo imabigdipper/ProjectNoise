@@ -371,7 +371,7 @@ public class MeasureService extends Service {
         // Get required data and format single line in logfile
         String current_activity = getCurActivity();
         Date currentTime = Calendar.getInstance().getTime();
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm" );
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm:ss" );
         @SuppressLint("SimpleDateFormat") SimpleDateFormat stf = new SimpleDateFormat( "dd/MM/yyyy" );
         String time = sdf.format(currentTime);
         String date = stf.format(currentTime);
@@ -429,6 +429,10 @@ public class MeasureService extends Service {
         try {
             boolean success = file.createNewFile();
             FileOutputStream fos = new FileOutputStream(file, true);
+            if(success)
+            {
+                fos.write("Date, Time, Average DB, Current Activity, Threshold Level Exceeded, Activity Notification Triggered, User Opened Notification \n".getBytes());
+            }
             fos.write(text.getBytes());
             MediaScannerConnection.scanFile(this, new String[] {file.toString()}, null, null);
             fos.flush();
