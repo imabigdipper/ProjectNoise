@@ -83,7 +83,6 @@ public class MeasureService extends Service {
         // Start foreground service with given foreground notification & initialize preference variables
         startForeground(PERSISTENT_ID, createForegroundNotification());
         initPrefs();
-        setActivityNotifTime();
 
         // Helper function to set up thread for measuring sound data
         startRecorder();
@@ -126,7 +125,7 @@ public class MeasureService extends Service {
 
 
     /**
-     * Helper function to create notification channel for the persistend notification
+     * Helper function to create notification channel for the persistent notification
      */
     private void createPersistentNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -159,30 +158,32 @@ public class MeasureService extends Service {
 
 
     /**
-     * Initialize variables from root_preferences file
+     * Initialize variables from root_preferences file. Preference keys are defined in /res/values/strings.xml
      */
     private void initPrefs() {
-        toggleCalibration = preferences.getBoolean("toggle_calibration", false);
-        toggleThresholdNotifications = preferences.getBoolean("toggle_threshold_notifications", false);
-        toggleActivityNotifications = preferences.getBoolean("toggle_activity_notifications", false);
-        toggleWakeupNotifications = preferences.getBoolean("toggle_wakeup_notification", false);
-        averageIntervalLen = Long.parseLong(preferences.getString("average_interval_len", "30"));
+        toggleCalibration = preferences.getBoolean(getString(R.string.pref_toggle_calibration), false);
+        toggleThresholdNotifications = preferences.getBoolean(getString(R.string.pref_toggle_thresh_notif), false);
+        toggleActivityNotifications = preferences.getBoolean(getString(R.string.pref_toggle_activity_notifs), false);
+        toggleWakeupNotifications = preferences.getBoolean(getString(R.string.pref_toggle_wakeup_notif), false);
+        averageIntervalLen = Long.parseLong(preferences.getString(getString(R.string.pref_interval_len), "30"));
 
         if (toggleCalibration)
-            calibration = Double.parseDouble(preferences.getString("calibration", "0"));
+            calibration = Double.parseDouble(preferences.getString(getString(R.string.pref_calibration), "0"));
 
         if (toggleThresholdNotifications) {
-            toggleNewThresholdAlgorithm = preferences.getBoolean("toggle_threshold_algorithm", true);
-            dbThreshold = Double.parseDouble(preferences.getString("db_threshold", "100"));
-            thresholdIntervalNum = Integer.parseInt(preferences.getString("threshold_interval_num", "30"));
+            toggleNewThresholdAlgorithm = preferences.getBoolean(getString(R.string.pref_toggle_thresh_algo), true);
+            dbThreshold = Double.parseDouble(preferences.getString(getString(R.string.pref_threshold), "100"));
+            thresholdIntervalNum = Integer.parseInt(preferences.getString(getString(R.string.pref_thresh_interval_num), "30"));
             threshQueue = new MovingAverage(thresholdIntervalNum);
         }
 
-        if (toggleActivityNotifications)
-            notificationIntervalLen = Double.parseDouble(preferences.getString("notification_interval_len", "2"));
+        if (toggleActivityNotifications) {
+            notificationIntervalLen = Double.parseDouble(preferences.getString(getString(R.string.pref_activity_notif_interval), "2"));
+            setActivityNotifTime();
+        }
 
         if (toggleWakeupNotifications) {
-            wakeupNotificationTime = preferences.getString("wakeup_time", "09:00");
+            wakeupNotificationTime = preferences.getString(getString(R.string.pref_wakeup_notif_time), "09:00");
             setWakeupDate();
         }
     }
@@ -274,8 +275,10 @@ public class MeasureService extends Service {
     private boolean isRecording = false;
 
 
-    /** Runnable executed inside the HandlerThread. Measures sound data over the given interval then calculates average dB. Re-invokes itself until service is killed. Heavily based on:
-     * https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
+    /** Runnable executed inside the HandlerThread. Measures sound data over the given interval then calculates average dB.
+     * Then does all processing related to notifications and logging.
+     * Re-invokes itself until service is killed.
+     * Heavily based on: https://github.com/gworkman/SoundMap/blob/master/app/src/main/java/edu/osu/sphs/soundmap/util/MeasureTask.java
      */
     Runnable measureRunnable = new Runnable() {
         @Override
@@ -449,13 +452,13 @@ public class MeasureService extends Service {
      * Returns current activity from the Activities page
      */
     private String getCurActivity() {
-        String activity = preferences.getString("current_activity","None");
+        String activity = preferences.getString(getString(R.string.act_current_activity),"None");
         if(activity.equals("custom1"))
-            activity = preferences.getString("custom_activity_1", "N/A");
+            activity = preferences.getString(getString(R.string.act_custom_1), "N/A");
         if(activity.equals("custom2"))
-            activity = preferences.getString("custom_activity_2", "N/A");
+            activity = preferences.getString(getString(R.string.act_custom_2), "N/A");
         if(activity.equals("custom3"))
-            activity = preferences.getString("custom_activity_3", "N/A");
+            activity = preferences.getString(getString(R.string.act_custom_3), "N/A");
 
         return activity;
     }

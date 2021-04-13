@@ -1,18 +1,12 @@
-package com.example.projectnoise.ui.preferences;
+package com.example.projectnoise.ui.settings;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
-import androidx.preference.PreferenceScreen;
 
 import com.example.projectnoise.services.MeasureService;
-import com.example.projectnoise.util.ShowListPreference;
 import com.takisoft.preferencex.PreferenceFragmentCompat;
 
 import com.example.projectnoise.R;
@@ -29,7 +23,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         super.onCreate(savedInstance);
         PreferenceManager.setDefaultValues(this.getContext(), R.xml.root_preferences, false);
-        Preference start_button = findPreference("service_start");
+        Preference start_button = findPreference(getString(R.string.pref_service_start));
         start_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -39,7 +33,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
-        Preference stop_button = findPreference("service_stop");
+        Preference stop_button = findPreference(getString(R.string.pref_service_stop));
         stop_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {

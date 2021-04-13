@@ -6,27 +6,22 @@
     app:startDestination="@+id/navigation_activities">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.projectnoise.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
-
-    <fragment
         android:id="@+id/navigation_activities"
         android:name="com.example.projectnoise.ui.activities.ActivitiesFragment"
         android:label="@string/title_activity"
-        tools:layout="@layout/fragment_notifications" />
+        />
 
     <fragment
         android:id="@+id/navigation_preferences"
-        android:name="com.example.projectnoise.ui.preferences.SettingsFragment"
-        android:label="@string/title_settings"
-        tools:layout="@layout/fragment_dashboard" />
+        android:name="com.example.projectnoise.ui.settings.SettingsFragment"
+        android:label="@string/title_settings" />
+
+
     <fragment
         android:id="@+id/password"
-        android:name="com.example.projectnoise.ui.activities.PasswordFragment"
-        android:label="Password"
-        tools:layout="@layout/fragment_dashboard" >
+        android:name="com.example.projectnoise.ui.settings.PasswordFragment"
+        android:label="Password" >
+
         <action
             android:id="@+id/action_password_to_navigation_preferences"
             app:destination="@id/navigation_preferences" />

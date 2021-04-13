@@ -32,11 +32,36 @@
     <!-- Preference Titles -->
     <string name="notifications_header">Notifications</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
     <string name="activity_title">Current Activity</string>
     <string name="activity_header">Current Activity</string>
     <string name="custom_activity_title">Custom Activity 1</string>
     <string name="notification_title">Activity Notification Interval</string>
     <string name="threshold_intervals_title">Threshold Intervals</string>
+
+    <!-- Preference Keys -->
+
+    <string name="pref_service_stop">service_stop</string>
+    <string name="pref_service_start">service_start</string>
+    <string name="pref_interval_len">average_interval_len</string>
+    <string name="pref_toggle_calibration">toggle_calibration</string>
+    <string name="pref_calibration">calibration</string>
+    <string name="pref_toggle_activity_notifs">toggle_activity_notifications</string>
+    <string name="pref_activity_notif_interval">notification_interval_len</string>
+    <string name="pref_toggle_thresh_notif">toggle_threshold_notifications</string>
+    <string name="pref_toggle_thresh_algo">toggle_threshold_algorithm</string>
+    <string name="pref_threshold">db_threshold</string>
+    <string name="pref_thresh_interval_num">threshold_interval_num</string>
+    <string name="pref_toggle_wakeup_notif">toggle_wakeup_notification</string>
+    <string name="pref_wakeup_notif_time">wakeup_time</string>
+    <string name="pref_auto_activity_list">auto_activity_list</string>
+    <string name="prefscreen_activity">activity_screen</string>
+    <string name="act_current_activity">current_activity</string>
+    <string name="pref_toggle_password">toggle_password</string>
+    <string name="pref_settings_password">settings_password</string>
+    <string name="act_custom_1">custom_activity_1</string>
+    <string name="act_custom_2">custom_activity_2</string>
+    <string name="act_custom_3">custom_activity_3</string>
+    <string name="pass_button_text">Submit</string>
+    <string name="pass_box_hint">Enter Password</string>
 </resources>
+

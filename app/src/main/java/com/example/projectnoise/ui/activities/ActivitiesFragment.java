@@ -7,9 +7,6 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.EditTextPreference;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
@@ -28,9 +25,9 @@ public class ActivitiesFragment extends PreferenceFragmentCompat {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         super.onViewCreated(view, savedInstanceState);
-        if (preferences.getBoolean("auto_activity_list", true)) {
-            PreferenceScreen preferenceScreen = findPreference("activity_screen");
-            ShowListPreference preference = findPreference("current_activity");
+        if (preferences.getBoolean(getString(R.string.pref_auto_activity_list), true)) {
+            PreferenceScreen preferenceScreen = findPreference(getString(R.string.prefscreen_activity));
+            ShowListPreference preference = findPreference(getString(R.string.act_current_activity));
             onDisplayPreferenceDialog(preference);
         }
     }

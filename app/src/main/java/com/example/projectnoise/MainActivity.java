@@ -37,8 +37,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_preferences, R.id.navigation_activities)
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_preferences, R.id.navigation_activities)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
@@ -49,10 +48,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * Helper functions to establish mic permissions
-     **/
 
+    /**
+     * Checks for Audio recording, storage, and foreground service permissions. If some permissions are not met, prompt the user.
+     */
     private void setupPermissions() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
@@ -89,22 +88,5 @@ public class MainActivity extends AppCompatActivity {
 //                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
 //                    READ_EXTERNAL_RC);
 //        }
-
-
-    }
-
-    private void verifyStoragePermissions() {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        Log.d(TAG, "CHECK PERMISSION");
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "NO PERMISSION");
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
     }
 }

@@ -7,13 +7,13 @@
 
         <Preference
             android:title="Start Service"
-            android:key="service_start"
+            android:key="@string/pref_service_start"
             android:summary="Starts measuring service"
             />
 
         <Preference
             android:title="Stop Service"
-            android:key="service_stop"
+            android:key="@string/pref_service_stop"
             android:summary="Stops measuring service"
             />
     </PreferenceCategory>
@@ -26,14 +26,14 @@
         <com.takisoft.preferencex.EditTextPreference
             android:inputType="number"
             app:iconSpaceReserved="false"
-            app:key="average_interval_len"
+            app:key="@string/pref_interval_len"
             android:defaultValue="60"
             app:summary="Interval over which the rolling average dB levels will be taken, in seconds"
             app:title="@string/average_interval_title" />
 
         <SwitchPreference
             app:iconSpaceReserved="false"
-            app:key="toggle_calibration"
+            app:key="@string/pref_toggle_calibration"
             app:summary="Toggles calibration of measured dB"
             app:title="@string/toggle_calibration_title"
             app:useSimpleSummaryProvider="true" />
@@ -42,21 +42,12 @@
             android:inputType="numberDecimal|numberSigned"
             app:dependency="toggle_calibration"
             app:iconSpaceReserved="true"
-            app:key="calibration"
+            app:key="@string/pref_calibration"
             android:defaultValue="0"
             app:summary="(+/-) float"
             app:title="@string/calibration_title"
             app:useSimpleSummaryProvider="true" />
 
-
-
-<!--        <com.takisoft.preferencex.TimePickerPreference-->
-<!--            app:dependency="service_scheduling"-->
-<!--            app:iconSpaceReserved="true"-->
-<!--            app:key="measureEndTime"-->
-<!--            app:summary="The time at which the dB measuring service will automatically stop recording"-->
-<!--            app:title="@string/measureStopTime_title"-->
-<!--            app:useSimpleSummaryProvider="true" />-->
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/notifications_header"
@@ -64,7 +55,7 @@
 
         <SwitchPreference
             app:iconSpaceReserved="false"
-            app:key="toggle_activity_notifications"
+            app:key="@string/pref_toggle_activity_notifs"
             app:summary="Toggle periodic activity notifications"
             app:title="Activity Notifications"
             app:useSimpleSummaryProvider="true" />
@@ -75,14 +66,14 @@
             app:entries="@array/notification_interval_entries"
             app:entryValues="@array/notification_interval_values"
             app:iconSpaceReserved="true"
-            app:key="notification_interval_len"
+            app:key="@string/pref_activity_notif_interval"
             android:defaultValue="2"
             app:summary="Interval at which notifications will be sent, reminding the user to update their activity."
             app:title="@string/notification_title" />
 
         <SwitchPreference
             app:iconSpaceReserved="false"
-            app:key="toggle_threshold_notifications"
+            app:key="@string/pref_toggle_thresh_notif"
             app:summary="Toggle prolonged threshold exposure notifications"
             app:title="Threshold Notifications"
             app:useSimpleSummaryProvider="true" />
@@ -90,7 +81,7 @@
         <SwitchPreference
             app:iconSpaceReserved="true"
             app:dependency="toggle_threshold_notifications"
-            app:key="toggle_threshold_algorithm"
+            app:key="@string/pref_toggle_thresh_algo"
             app:summary="Toggle the use of the new or old threshold algorithm"
             app:title="Use Rolling Window Algorithm"
             app:useSimpleSummaryProvider="true" />
@@ -99,7 +90,7 @@
             app:dependency="toggle_threshold_notifications"
             android:inputType="numberDecimal"
             app:iconSpaceReserved="true"
-            app:key="db_threshold"
+            app:key="@string/pref_threshold"
             android:defaultValue="80"
             app:summary="dB threshold at which the app will mark an interval"
             app:title="@string/db_threshold_title" />
@@ -108,14 +99,14 @@
             app:dependency="toggle_threshold_notifications"
             android:inputType="number"
             app:iconSpaceReserved="true"
-            app:key="threshold_interval_num"
+            app:key="@string/pref_thresh_interval_num"
             android:defaultValue="30"
             app:summary="How many recording intervals above the threshold pass until the user is notified"
             app:title="@string/threshold_intervals_title" />
 
         <SwitchPreference
             app:iconSpaceReserved="false"
-            app:key="toggle_wakeup_notification"
+            app:key="@string/pref_toggle_wakeup_notif"
             app:summary="Toggles sending a wakeup notification regardless of the current activity"
             app:title="Wakeup Notification"
             app:useSimpleSummaryProvider="true" />
@@ -123,7 +114,7 @@
         <com.takisoft.preferencex.TimePickerPreference
             app:dependency="toggle_wakeup_notification"
             app:iconSpaceReserved="true"
-            app:key="wakeup_time"
+            app:key="@string/pref_wakeup_notif_time"
             android:defaultValue="09:00"
             app:summary="The time at which a wakeup notification will be sent"
             app:title="Wakeup Notification Time"
@@ -137,7 +128,7 @@
 
         <SwitchPreference
             app:iconSpaceReserved="false"
-            app:key="auto_activity_list"
+            app:key="@string/pref_auto_activity_list"
             app:defaultValue="true"
             app:title="Auto-Activity List"
             app:summary="Automatically show the activity list whenever the activity panel is opened" />
@@ -145,7 +136,7 @@
 
         <SwitchPreference
             app:iconSpaceReserved="false"
-            app:key="toggle_password"
+            app:key="@string/pref_toggle_password"
             app:defaultValue="true"
             app:title="Password Lock"
             app:summary="Lock the settings panel with a password" />
@@ -154,7 +145,7 @@
         <EditTextPreference
             app:dependency="toggle_password"
             android:inputType="text"
-            app:key="settings_password"
+            app:key="@string/pref_settings_password"
             app:defaultValue="pnoise"
             app:title="Settings Panel Password"
             app:useSimpleSummaryProvider="true"/>

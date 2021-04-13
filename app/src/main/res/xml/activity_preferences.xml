@@ -1,14 +1,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:key="activity_screen">
-
+    android:key="@string/prefscreen_activity">
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/activity_header">
 
         <com.example.projectnoise.util.ShowListPreference
-            app:key="current_activity"
+            app:key="@string/act_current_activity"
             app:entries="@array/activity_entries"
             app:entryValues="@array/activity_values"
             app:title="@string/activity_title"
@@ -18,30 +17,24 @@
 
         <EditTextPreference
             android:inputType="text"
-            app:key="custom_activity_1"
+            app:key="@string/act_custom_1"
             app:defaultValue="N/A"
-            app:title="@string/custom_activity_title"
+            app:title="Custom Activity 1"
             app:useSimpleSummaryProvider="true"/>
 
         <EditTextPreference
             android:inputType="text"
-            app:key="custom_activity_2"
+            app:key="@string/act_custom_2"
             app:defaultValue="N/A"
             app:title="Custom Activity 2"
             app:useSimpleSummaryProvider="true"/>
 
-
         <EditTextPreference
             android:inputType="text"
-            app:key="custom_activity_3"
+            app:key="@string/act_custom_3"
             app:defaultValue="N/A"
             app:title="Custom Activity 3"
             app:useSimpleSummaryProvider="true"/>
 
-
-
-
-
     </PreferenceCategory>
-
 </PreferenceScreen>

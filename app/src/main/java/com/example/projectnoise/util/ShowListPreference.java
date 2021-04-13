@@ -5,6 +5,10 @@ import android.util.AttributeSet;
 
 import androidx.preference.ListPreference;
 
+/**
+ * This class is an exact copy of the ListPreference. Having a custom copy of it allows us to access core methods that allow the Auto-Show Activity list function to work.
+ */
+
 public class ShowListPreference extends ListPreference {
 
 
