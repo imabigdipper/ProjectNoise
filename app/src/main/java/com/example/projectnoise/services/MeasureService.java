@@ -91,7 +91,7 @@ public class MeasureService extends Service {
         Log.d(TAG, "Starting measureService thread with \n" +
                 "Calibration: " + toggleCalibration + "\n" +
                 "Calibration Constant: " + calibration + " dB \n" +
-                "Averaging Interval Length: " + averageIntervalLen + " seconds \n" +
+                "Averaging Interval Length: " + recordingIntervalLen + " seconds \n" +
                 "Activity Notifications: " + toggleActivityNotifications + "\n" +
                 "Activity Notification Interval: " + notificationIntervalLen + " hours\n" +
                 "Threshold Notifications: " + toggleThresholdNotifications + "\n" +
@@ -165,10 +165,12 @@ public class MeasureService extends Service {
         toggleThresholdNotifications = preferences.getBoolean(getString(R.string.pref_toggle_thresh_notif), false);
         toggleActivityNotifications = preferences.getBoolean(getString(R.string.pref_toggle_activity_notifs), false);
         toggleWakeupNotifications = preferences.getBoolean(getString(R.string.pref_toggle_wakeup_notif), false);
-        averageIntervalLen = Long.parseLong(preferences.getString(getString(R.string.pref_interval_len), "30"));
+        recordingIntervalLen = Long.parseLong(preferences.getString(getString(R.string.pref_interval_len), "30"));
 
         if (toggleCalibration)
             calibration = Double.parseDouble(preferences.getString(getString(R.string.pref_calibration), "0"));
+        else
+            calibration = 0;
 
         if (toggleThresholdNotifications) {
             toggleNewThresholdAlgorithm = preferences.getBoolean(getString(R.string.pref_toggle_thresh_algo), true);
@@ -237,7 +239,7 @@ public class MeasureService extends Service {
     int ACTIVITY_ID = 3;
 
     // Preference variables
-    private long averageIntervalLen;
+    private long recordingIntervalLen;
     private double calibration;
     private double dbThreshold;
     private int thresholdIntervalNum;
@@ -262,7 +264,7 @@ public class MeasureService extends Service {
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
-    private static final int SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION;
+    private static final int SOURCE = MediaRecorder.AudioSource.DEFAULT;
 
     int bufferSize = 8192; // 2 ^ 13, necessary for the fft
     private final DoubleFFT_1D transform = new DoubleFFT_1D(8192);
@@ -284,8 +286,7 @@ public class MeasureService extends Service {
         @Override
         public void run() {
             NotificationManager notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-            long startTime = SystemClock.uptimeMillis();
-            long measureTime = SystemClock.uptimeMillis() + (1000 * averageIntervalLen);
+            long measureTime = SystemClock.uptimeMillis() + (1000 * recordingIntervalLen);
             short[] buffer = new short[bufferSize];
             double dB;
             double dbSumTotal = 0;
@@ -293,7 +294,6 @@ public class MeasureService extends Service {
             int count = 0;
             double average = 0;
             boolean beenOpened = false;
-
 
             // Continuously read audio into buffer for measureTime ms
             while (SystemClock.uptimeMillis() < measureTime && isRecording) {
@@ -306,20 +306,26 @@ public class MeasureService extends Service {
                     count++;
                 }
 
-                // Check if calibration is enabled, if so, add the calibration constant
-                average = toggleCalibration ?
-                        20 * Math.log10(dbSumTotal / count) + 8.25 + calibration
-                        : 20 * Math.log10(dbSumTotal / count) + 8.25;
-
+                // calibration is set to defined value in settings, or 0 if calibration is disabled
+                average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
                 // Instant dB
                 // instant = 20 * Math.log10(dB) + 8.25 + calibration;
 
                 // If app hasn't been opened during the current recording interval, check if it is currently open
-                beenOpened = beenOpened || ForegroundCheck();
+                beenOpened = beenOpened || foregroundCheck();
             }
 
             // Check if recording service has ended or not
-            if (isRecording) {
+            if (!isRecording) {
+                // Stop thread, remove persistent notification, release instances
+                notificationManager.cancel(PERSISTENT_ID);
+                // Thread is done recording, release AudioRecord instance
+                Log.d(TAG, "Stopping measuring thread");
+                recorder.release();
+                recorder = null;
+                Log.d(TAG, "Successfully released AudioRecord instance");
+
+            } else {
                 // Check preferences to see if notification types are enabled, if so, check if they need to be sent
                 if (toggleThresholdNotifications) {
                     // Check which threshold algorithm is being used
@@ -334,20 +340,12 @@ public class MeasureService extends Service {
                 if (toggleWakeupNotifications)                  wakeupNotificationCheck();
 
                 // Log recorded info and update persistent notification with current activity
-                Log.i(TAG, "Average dB over " + averageIntervalLen + " seconds: " + average);
+                Log.i(TAG, "Average dB over " + recordingIntervalLen + " seconds: " + average);
                 writeToLog(formatLog(average, beenOpened));
                 notificationManager.notify(PERSISTENT_ID, createForegroundNotification());
 
                 // Call the runnable again to measure average of next time block
                 handler.post(this);
-            } else {
-                // Stop thread, remove persistent notification, release instances
-                notificationManager.cancel(PERSISTENT_ID);
-                // Thread is done recording, release AudioRecord instance
-                Log.d(TAG, "Stopping measuring thread");
-                recorder.release();
-                recorder = null;
-                Log.d(TAG, "Successfully released AudioRecord instance");
             }
         }
     };
@@ -405,9 +403,9 @@ public class MeasureService extends Service {
 
     /**
      * Checks if the app is in the foreground.
-     * @return 1 if the app is currently in the foreground, 0 if it is not.
+     * @return true if the app is currently in the foreground, false if it is not.
      */
-    private boolean ForegroundCheck(){
+    private boolean foregroundCheck(){
         ActivityManager.RunningAppProcessInfo appProcessInfo = new ActivityManager.RunningAppProcessInfo();
         ActivityManager.getMyMemoryState(appProcessInfo);
         return (appProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND || appProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE);
@@ -468,7 +466,6 @@ public class MeasureService extends Service {
      * Helper function to check threshold and display notification if necessary. Uses a queue in MovingAverage class to calculate moving average.
      */
     private void threshCheckQueue(double current_average) {
-        Log.d(TAG, "QUEUE adding : " + current_average);
         threshQueue.addData(current_average);
         Log.d(TAG, "QUEUE MEAN: " + threshQueue.getMean());
         if (threshQueue.getMean() >= dbThreshold)
