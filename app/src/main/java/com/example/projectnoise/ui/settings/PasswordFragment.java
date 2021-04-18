@@ -49,7 +49,8 @@ public class PasswordFragment extends Fragment {
             // See if it matches password, defined in res/xml/root_preferences.xml
             if(text.equals(preferences.getString(getString(R.string.pref_settings_password), "pnoise"))){
                 InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                if (getActivity().getCurrentFocus() != null)
+                    inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 // Navigate to settings page
                 Navigation.findNavController(view).navigate(R.id.navigation_preferences);
             }
