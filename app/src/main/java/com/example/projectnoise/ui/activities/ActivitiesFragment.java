@@ -1,5 +1,6 @@
 package com.example.projectnoise.ui.activities;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -7,6 +8,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
@@ -31,4 +33,6 @@ public class ActivitiesFragment extends PreferenceFragmentCompat {
             onDisplayPreferenceDialog(preference);
         }
     }
+
+
 }

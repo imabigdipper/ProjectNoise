@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -88,5 +89,9 @@ public class MainActivity extends AppCompatActivity {
 //                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
 //                    READ_EXTERNAL_RC);
 //        }
+    }
+
+    public void exitApp(View v) {
+        moveTaskToBack(true);
     }
 }

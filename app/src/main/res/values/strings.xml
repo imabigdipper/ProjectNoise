@@ -33,7 +33,7 @@
     <string name="notifications_header">Notifications</string>
 
     <string name="activity_title">Current Activity</string>
-    <string name="activity_header">Current Activity</string>
+    <string name="activity_header">Select Your Activity</string>
     <string name="custom_activity_title">Custom Activity 1</string>
     <string name="notification_title">Activity Notification Interval</string>
     <string name="threshold_intervals_title">Threshold Intervals</string>
@@ -63,5 +63,7 @@
     <string name="act_custom_3">custom_activity_3</string>
     <string name="pass_button_text">Submit</string>
     <string name="pass_box_hint">Enter Password</string>
+    <string name="confirm_button_text">Confirm Selection</string>
+    <string name="confirm_key">confirm_button</string>
 </resources>
 
