@@ -2,9 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:key="@string/prefscreen_activity">
 
-    <PreferenceCategory
-        app:iconSpaceReserved="false"
-        app:title="@string/activity_header">
+
 
         <com.example.projectnoise.util.ShowListPreference
             app:key="@string/act_current_activity"
@@ -36,5 +34,9 @@
             app:title="Custom Activity 3"
             app:useSimpleSummaryProvider="true"/>
 
-    </PreferenceCategory>
+
+    <Preference
+        android:key="@string/confirm_key"
+        android:iconSpaceReserved="false"
+        android:widgetLayout="@layout/confirm_button" />
 </PreferenceScreen>
