@@ -91,6 +91,11 @@ public class MainActivity extends AppCompatActivity {
 //        }
     }
 
+    /**
+     * Function referenced in confirm_button.xml to make the confirmation button close the app
+     * @param v
+     */
+
     public void exitApp(View v) {
         moveTaskToBack(true);
     }
