@@ -4,7 +4,9 @@ This app was created for Erika Skoe of UCONN's Auditory Brain Research Lab. This
 
 # Documentation
 
-Relevant Technical Documentation can be found here: https://hackmd.io/@imabigdipper/NoiseLifeTechDoc
+Technical Documentation can be found [here](https://hackmd.io/@imabigdipper/NoiseLifeTechDoc)
+
+User Documentation can be found [here](https://docs.google.com/document/d/17kGBbxh-eBWdiUsnhiu2aZbxiSHXl0fk/edit?usp=sharing&ouid=107282583284145731019&rtpof=true&sd=true)
 
 # Requirements
 This app is compatible with Android 8.1 and above, but has been mainly tested on Android 10.
