@@ -1,6 +1,6 @@
 # ProjectNoise
 
-This app was created for Erika Skoe of UCONN's Auditory Brain Research Lab. This app is meant to be used by researchers interested in correlating a test participant's daily activiies to the ambient dB exposed to while performing that activity. This app collects data on ambient dB levels, and the user's current activity, and stores it into a logfile. The app also has the ability to send notifications to remind the user to update their activity periodically.
+This app was created for Erika Skoe of UCONN's Auditory Brain Research Lab. This app is meant to be used by researchers interested in correlating a test participant's daily activities to the ambient dB exposed to while performing that activity. This app collects data on ambient dB levels, and the user's current activity, and stores it into a logfile. The app also has the ability to send notifications to remind the user to update their activity periodically.
 
 # Documentation
 
